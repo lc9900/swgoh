@@ -83,6 +83,25 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                     message: who + ":middle_finger:".repeat(Math.floor(Math.random() * 20) + 5)
                 });
                 break;
+            case 'halo':
+                who = args[0]? args[0]+"! ": user+"! ";
+                args = args.splice(1);
+                num = Math.floor(Math.random() * phrases.halo.length);
+                if(who.includes('secret')){
+
+                    bot.sendMessage({
+                        to: channelID,
+                        message: "Cody made me do it!"
+                    });
+                }
+                else {
+                    bot.sendMessage({
+                        to: channelID,
+                        message: who + phrases.halo[num]
+                    });
+                }
+
+                break;
             default:
                 bot.sendMessage({
                    to: channelID,

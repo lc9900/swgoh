@@ -50,6 +50,27 @@ var money = [
     "$50",
     "$100",
 ];
+var halo = [
+    `
+    Two guys walking down the street.
+    One guy said: hey what game you are playing?
+    The other guys said: halo, what about you?
+    The first guy said: :middle_finger:`,
+
+    `
+    A halo player and a cod player wallking down the street.
+    The cod player: Hey, you want me to help you improve your aim?
+    The halo player: Why you think I need help?
+    The cod player: I guess it's cuz you play H(elp) A L(oser) O(ut)?`,
+
+    `
+    Why is there more cod player than halo player?
+    Cuz the halo players all got shot by cod players`,
+
+    `
+    Why does HALO peolple dislike lettuce and ham?
+    Cuz H(am) A(nd) L(ettuce) O(uch)`,
+];
 module.exports = {
-    compliments, dis, money,
+    compliments, dis, money, halo,
 }
