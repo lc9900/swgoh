@@ -83,6 +83,15 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                     message: who + ":middle_finger:".repeat(Math.floor(Math.random() * 20) + 5)
                 });
                 break;
+            case 'snowflake':
+                who = args[0]? args[0]+"! ": user+"! ";
+                args = args.splice(1);
+
+                bot.sendMessage({
+                    to: channelID,
+                    message: who + ":snowflake:".repeat(Math.floor(Math.random() * 20) + 5)
+                });
+                break;
             case 'halo':
                 who = args[0]? args[0]+"! ": user+"! ";
                 args = args.splice(1);
