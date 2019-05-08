@@ -43,6 +43,7 @@ var dis = [
     "As an outsider, what do you think of the human race?",
     "Just because you have one, doesn't mean you have to act like one",
     "Are you always this stupid or is today a special occasion?",
+    "This. Is. COVENANT!",
 
 ];
 
@@ -73,6 +74,14 @@ var halo = [
     Why does HALO peolple dislike lettuce and ham?
     Cuz H(am) A(nd) L(ettuce) O(uch)`,
 ];
+
+var fight = [
+`Give them nothing, but take from them, EVERYTHING!`,
+];
+
+var quotes = [
+"Leftover pork chops are delicious! -- Cody",
+];
 module.exports = {
-    compliments, dis, money, halo,
+    compliments, dis, money, halo, fight, quotes,
 }

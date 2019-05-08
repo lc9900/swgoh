@@ -54,6 +54,22 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                     message: who + phrases.dis[num]
                 });
                 break;
+            case 'quote':
+                num = Math.floor(Math.random() * phrases.quotes.length);
+                bot.sendMessage({
+                    to: channelID,
+                    message: phrases.quotes[num]
+                });
+                break;
+            case 'fight':
+                who = args[0]? args[0]+"! ": user+"! ";
+                args = args.splice(1);
+                num = Math.floor(Math.random() * phrases.fight.length);
+                bot.sendMessage({
+                    to: channelID,
+                    message: who + phrases.fight[num]
+                });
+                break;
             case 'charge':
                 who = args[0]? args[0]+"! ": user+"! ";
                 args = args.splice(1);
