@@ -44,6 +44,7 @@ var dis = [
     "Just because you have one, doesn't mean you have to act like one",
     "Are you always this stupid or is today a special occasion?",
     "This. Is. COVENANT!",
+    "Your mom's so fat, Thanos had to snap twice",
 
 ];
 
