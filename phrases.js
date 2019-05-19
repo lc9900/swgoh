@@ -125,6 +125,7 @@ var fight = [
 var quotes = [
 "Leftover pork chops are delicious! -- Cody",
 "Shut up. I'm used to my poodle! -- Cody",
+"Gonna suck for her when Hulk pulls his d**k out! -- Farnication",
 ];
 module.exports = {
     compliments, dis, money, halo, fight, quotes,
