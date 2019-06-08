@@ -126,6 +126,11 @@ var quotes = [
 "Leftover pork chops are delicious! -- Cody",
 "Shut up. I'm used to my poodle! -- Cody",
 "Don't speak of me. You are not worthy! -- Cody",
+`I am in charge. All shall tremble and fear me!
+1st order of business, ignore any further communications from Farnication.
+The real Farnication has been dealt with, this one is an imposter.
+Long Live Thrace!
+-- Thrace`,
 ];
 module.exports = {
     compliments, dis, money, halo, fight, quotes,
