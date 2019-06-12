@@ -131,6 +131,8 @@ var quotes = [
 The real Farnication has been dealt with, this one is an imposter.
 Long Live Thrace!
 -- Thrace`,
+"Mine! -- farnication",
+"I am too good for halo. -- Keanu Reeves",
 ];
 module.exports = {
     compliments, dis, money, halo, fight, quotes,
