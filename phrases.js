@@ -133,6 +133,7 @@ Long Live Thrace!
 -- Thrace`,
 "Mine! -- farnication",
 "I am too good for halo. -- Keanu Reeves",
+"Kneel before Cody! -- Cody",
 ];
 module.exports = {
     compliments, dis, money, halo, fight, quotes,
