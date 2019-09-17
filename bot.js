@@ -180,5 +180,5 @@ function findAllRelic(players, relic_tier=7){
     // console.log(table(table_data, table_config));
     // return table(table_data, table_config);
 
-    return str += JSON.stringify(res, null, 2);
+    return str += JSON.stringify(res, null, 2).replace(/{|}/g, "");
 }
