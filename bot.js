@@ -1,6 +1,17 @@
 var Discord = require('discord.io');
 var logger = require('winston');
 var phrases = require('./phrases');
+const axios = require('axios');
+const table = require('table').table;
+const base_url = "https://swgoh.gg/api";
+const my_guild_id = 8665;
+let guild = {},
+    table_config = {
+        columns:{
+            0:{alignment: 'left', width: 8},
+            1:{alignment: 'center', width: 5},
+        },
+    };
 
 let BOT_TOKEN = process.env.BOT_TOKEN;
 
@@ -127,6 +138,17 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                 }
 
                 break;
+            case 'self':
+                axios.get(base_url + "/guild/" + my_guild_id)
+                    .then(response => response.data)
+                    .then(data => {
+                        guild = data,
+                        bot.sendMessage({
+                            to: channelID,
+                            message: findAllRelic(guild.players),
+                        });
+                    });
+                break;
             default:
                 bot.sendMessage({
                    to: channelID,
@@ -136,3 +158,27 @@ bot.on('message', function (user, userID, channelID, message, evt) {
          }
      }
 });
+
+
+//////////////////////////////////
+function findAllRelic(players, relic_tier=7){
+    let table_data = [], res = {}, str = " ========== Relic 7 Toons ==========\n";
+    players.forEach(player =>{
+        let units = player.units;
+        units.forEach(unit => {
+            if(unit.data.relic_tier && unit.data.relic_tier >= relic_tier){
+                if(res[unit.data.name]) res[unit.data.name]++;
+                else res[unit.data.name] = 1;
+            }
+        });
+    });
+
+    table_data.push([`Relic Tier ${relic_tier}`, "Count"]);
+    for(let key in res){
+        table_data.push([key, res[key]]);
+    }
+    // console.log(table(table_data, table_config));
+    // return table(table_data, table_config);
+
+    return str += JSON.stringify(res, null, 2);
+}
