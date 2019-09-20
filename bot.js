@@ -54,7 +54,7 @@ let guild = {},
         "Bistan's U-wing",
     ],
     tracked_toon_stats = {
-        "gear_level": [10,11,12,13],
+        "gear_level": [11,12,13],
         "relic_tier": [1,2,3,4,5,6,7],
     },
     tracked_ship_stats = {
@@ -89,13 +89,13 @@ function twParseGuild(players, guild_store){
 
 function twCompare(guild_a, guild_b){
     let res = [], level, toon, ship, i, table_data = [], res_a = {}, res_b = {},
-        str = `=== ${guild_a.data.name} vs ${guild_b.data.name} ===\n`;
+        str = `=== ${guild_a.data.name} vs ${guild_b.data.name} ===\n\n`;
     twParseGuild(guild_a.players, guild_store_a);
     twParseGuild(guild_b.players, guild_store_b);
 
     // console.log(JSON.stringify(guild_store_a, null, 2));
     for(toon in guild_store_a.toons){
-        str += `***${toon} gear***\n`;
+        str += `*** ${toon} ***\n`;
         // res.push(`*** ${toon} gear compare ***\n`);
 
         for(i = 0; i < tracked_toon_stats.gear_level.length; i++){
@@ -104,28 +104,28 @@ function twCompare(guild_a, guild_b){
                 b = guild_store_b.toons[toon].gear_level[level];
             if(a === 0 && b === 0) continue;
 
-            str +=`${level}: ${a} vs ${b}\n`;
+            str +=`G${level}: ${a} vs ${b}\n`;
         }
         // res.push(str);
-        str += `***relic***\n`;
+        // str += `***relic***\n`;
         for(i = 0; i < tracked_toon_stats.relic_tier.length; i++){
             level = tracked_toon_stats.relic_tier[i];
             let a = guild_store_a.toons[toon].relic_tier[level],
                 b = guild_store_b.toons[toon].relic_tier[level];
             if(a === 0 && b === 0) continue;
 
-            str +=`${level}: ${a} vs ${b}\n`;
+            str +=`R${level}: ${a} vs ${b}\n`;
         }
         // res.push(str);
         // str = '';
         if(str.length > 1900){
             res.push(str);
-            str = '';
+            str = `=== ${guild_a.data.name} vs ${guild_b.data.name} ===\n\n`;
         }
     }
 
     for(ship in guild_store_a.ships){
-        str += `***${ship} rarity***\n`;
+        str += `*** ${ship} ***\n`;
 
         for(i = 0; i < tracked_ship_stats.rarity.length; i++){
             level = tracked_ship_stats.rarity[i];
@@ -133,12 +133,12 @@ function twCompare(guild_a, guild_b){
                 b = guild_store_b.ships[ship].rarity[level];
             if(a === 0 && b === 0) continue;
 
-            str += `${level}: ${a} vs ${b}\n`;
+            str += `${level}*: ${a} vs ${b}\n`;
         }
 
-        if(str.length > 1500){
+        if(str.length > 1900){
             res.push(str);
-            str = '';
+            str = `=== ${guild_a.data.name} vs ${guild_b.data.name} ===\n\n`;
         }
     }
     // res.push(str);
@@ -349,7 +349,7 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                             // console.log(res[i].length);
                             bot.sendMessage({
                                to: channelID,
-                               message: res[i],
+                               message: '```' + res[i] + '```',
                             });
                             sleep(5000);
                         }
@@ -388,7 +388,7 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                 //             console.log(res[i].length);
                 //             bot.sendMessage({
                 //                to: channelID,
-                //                message: res[i],
+                //                message: '```' + res[i] + '```',
                 //             });
                 //             sleep(10000);
                 //         }
