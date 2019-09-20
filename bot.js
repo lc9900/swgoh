@@ -125,7 +125,7 @@ function twCompare(guild_a, guild_b){
     }
 
     for(ship in guild_store_a.ships){
-        str += `***${ship}rarity***\n`;
+        str += `***${ship} rarity***\n`;
 
         for(i = 0; i < tracked_ship_stats.rarity.length; i++){
             level = tracked_ship_stats.rarity[i];
