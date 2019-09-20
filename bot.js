@@ -95,33 +95,45 @@ function twCompare(guild_a, guild_b){
 
     // console.log(JSON.stringify(guild_store_a, null, 2));
     for(toon in guild_store_a.toons){
-        str += `*** ${toon} gear compare ***\n`;
+        str += `***${toon} gear***\n`;
         // res.push(`*** ${toon} gear compare ***\n`);
 
         for(i = 0; i < tracked_toon_stats.gear_level.length; i++){
             level = tracked_toon_stats.gear_level[i];
-            str +=`${level}: ${guild_store_a.toons[toon].gear_level[level]} vs ${guild_store_b.toons[toon].gear_level[level]}\n`;
+            let a = guild_store_a.toons[toon].gear_level[level],
+                b = guild_store_b.toons[toon].gear_level[level];
+            if(a === 0 && b === 0) continue;
+
+            str +=`${level}: ${a} vs ${b}\n`;
         }
         // res.push(str);
-        str += `*** ${toon} relic compare ***\n`;
+        str += `***relic***\n`;
         for(i = 0; i < tracked_toon_stats.relic_tier.length; i++){
             level = tracked_toon_stats.relic_tier[i];
-            str +=`${level}: ${guild_store_a.toons[toon].relic_tier[level]} vs ${guild_store_b.toons[toon].relic_tier[level]}\n`;
+            let a = guild_store_a.toons[toon].relic_tier[level],
+                b = guild_store_b.toons[toon].relic_tier[level];
+            if(a === 0 && b === 0) continue;
+
+            str +=`${level}: ${a} vs ${b}\n`;
         }
         // res.push(str);
         // str = '';
-        if(str.length > 1500){
+        if(str.length > 1900){
             res.push(str);
             str = '';
         }
     }
 
     for(ship in guild_store_a.ships){
-        str += `*** ${ship} rarity compare ***\n`;
+        str += `***${ship}rarity***\n`;
 
         for(i = 0; i < tracked_ship_stats.rarity.length; i++){
             level = tracked_ship_stats.rarity[i];
-            str += `${level}: ${guild_store_a.ships[ship].rarity[level]} vs ${guild_store_b.ships[ship].rarity[level]}\n`;
+            let a = guild_store_a.ships[ship].rarity[level],
+                b = guild_store_b.ships[ship].rarity[level];
+            if(a === 0 && b === 0) continue;
+
+            str += `${level}: ${a} vs ${b}\n`;
         }
 
         if(str.length > 1500){
@@ -132,7 +144,7 @@ function twCompare(guild_a, guild_b){
     // res.push(str);
 
     // return res;
-
+    if(str.length > 0) res.push(str);
     return res;
 }
 
@@ -339,7 +351,7 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                                to: channelID,
                                message: res[i],
                             });
-                            sleep(2000000);
+                            sleep(5000);
                         }
                     })
                     .catch(err => console.log(err));
@@ -349,7 +361,6 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                    to: channelID,
                    message: "This command is reserved for testing."
                 });
-                ///////////////////////////////////////////////////////
                 // initGuildStore(guild_store_a);
                 // initGuildStore(guild_store_b);
                 // axios.get(base_url + "/guild/" + args[0])
@@ -369,24 +380,21 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                 //             })
                 //     })
                 //     .then(() => {
-                //         console.log(twCompare(guild_a, guild_b));
+                //         let res = twCompare(guild_a, guild_b), i = 0;
+                //         // console.log(res);
+                //         console.log(res.length);
+
+                //         for(let i = 0; i < res.length; i++){
+                //             console.log(res[i].length);
+                //             bot.sendMessage({
+                //                to: channelID,
+                //                message: res[i],
+                //             });
+                //             sleep(10000);
+                //         }
                 //     })
                 //     .catch(err => console.log(err));
-                ////////////////////////////////////////
-                // axios.get(base_url + "/guild/" + my_guild_id)
-                //     .then(response => response.data)
-                //     .then(data => {
-                //         guild = data,
-                //         bot.sendMessage({
-                //             to: channelID,
-                //             message: findBugs(guild.players),
-                //         });
-                //         bot.sendMessage({
-                //             to: channelID,
-                //             message: findBugs(guild.players, 13),
-                //         });
-                //     });
-                //////////////////////////////
+                // break;
                 break;
             default:
                 bot.sendMessage({
