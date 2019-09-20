@@ -4,3 +4,4 @@ auth.json
 package-lock.json
 boring.js
 image/
+tmp/
