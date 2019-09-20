@@ -73,6 +73,11 @@ function twParseGuild(players, guild_store){
                 }
                 if(tracked_toon_stats.relic_tier.includes(unit.data.relic_tier)){
                     guild_store.toons[unit.data.name].relic_tier[unit.data.relic_tier]++;
+
+                    // debug
+                    // if(unit.data.relic_tier === 1 && unit.data.name === "General Kenobi"){
+                    //     console.log("GK R1 data: " + JSON.stringify(unit, null, 2));
+                    // }
                 }
             }
 
@@ -108,14 +113,17 @@ function twCompare(guild_a, guild_b){
         }
         // res.push(str);
         // str += `***relic***\n`;
-        for(i = 0; i < tracked_toon_stats.relic_tier.length; i++){
-            level = tracked_toon_stats.relic_tier[i];
-            let a = guild_store_a.toons[toon].relic_tier[level],
-                b = guild_store_b.toons[toon].relic_tier[level];
-            if(a === 0 && b === 0) continue;
 
-            str +=`R${level}: ${a} vs ${b}\n`;
-        }
+        // Relic tier data from swgoh is all wrong. Commenting this out.
+        // for(i = 0; i < tracked_toon_stats.relic_tier.length; i++){
+        //     level = tracked_toon_stats.relic_tier[i];
+        //     let a = guild_store_a.toons[toon].relic_tier[level],
+        //         b = guild_store_b.toons[toon].relic_tier[level];
+        //     if(a === 0 && b === 0) continue;
+
+        //     str +=`R${level}: ${a} vs ${b}\n`;
+        // }
+
         // res.push(str);
         // str = '';
         if(str.length > 1900){
@@ -344,7 +352,7 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                         let res = twCompare(guild_a, guild_b), i = 0;
                         // console.log(res);
                         // console.log(res.length);
-
+                        // console.log(JSON.stringify(guild_store_b, null, 2));
                         for(let i = 0; i < res.length; i++){
                             // console.log(res[i].length);
                             bot.sendMessage({
