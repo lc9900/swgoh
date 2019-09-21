@@ -465,11 +465,20 @@ function findBugs(players, gear_level=10){
     return str += JSON.stringify(res, null, 2).replace(/{|}/g, "");
 }
 
-function sleep(milliseconds) {
-  var start = new Date().getTime();
-  for (var i = 0; i < 1e7; i++) {
-    if ((new Date().getTime() - start) > milliseconds){
-      break;
-    }
+// function sleep(milliseconds) {
+//   var start = new Date().getTime();
+//   for (var i = 0; i < 1e7; i++) {
+//     if ((new Date().getTime() - start) > milliseconds){
+//       break;
+//     }
+//   }
+// }
+
+// This is better because it doesn't depend on i < 1e7.
+// It's actually using the difference between end - start
+function sleep(ms){
+  let start = Date.now(), end = Date.now();
+  while(end - start < ms){
+    end = Date.now();
   }
 }
