@@ -94,9 +94,11 @@ function twParseGuild(players, guild_store){
 
 function twCompare(guild_a, guild_b){
     let res = [], level, toon, ship, i, table_data = [], res_a = {}, res_b = {},
-        str = `${guild_a.data.name} vs ${guild_b.data.name}\n\n`;
+        str = `${guild_a.data.name} vs ${guild_b.data.name}\n`;
     twParseGuild(guild_a.players, guild_store_a);
     twParseGuild(guild_b.players, guild_store_b);
+
+    str += `GP: ${guild_a.data.galactic_power} vs ${guild_b.data.galactic_power}\n\n`;
 
     // console.log(JSON.stringify(guild_store_a, null, 2));
     for(toon in guild_store_a.toons){
