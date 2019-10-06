@@ -123,7 +123,6 @@ function twCompare(guild_a, guild_b){
             level = tracked_toon_stats.relic_tier[i];
             let a = guild_store_a.toons[toon].relic_tier[level],
                 b = guild_store_b.toons[toon].relic_tier[level];
-            if (isNaN(a))
             if(a === 0 && b === 0) continue;
 
             str +=`R${level}: ${a} vs ${b}\n`;
@@ -143,7 +142,10 @@ function twCompare(guild_a, guild_b){
             level = tracked_ship_stats.rarity[i];
             let a = guild_store_a.ships[ship].rarity[level],
                 b = guild_store_b.ships[ship].rarity[level];
-            if(a === 0 && b === 0) continue;
+            if(a == 0 && b == 0) {
+                // console.log("found both zero");
+                continue;
+            }
 
             str += `${level}*: ${a} vs ${b}\n`;
         }
