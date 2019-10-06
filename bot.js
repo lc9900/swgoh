@@ -486,7 +486,7 @@ function findBugs(players, gear_level=10){
 }
 
 function clearScreen(){
-    return "Cleared\n".repeat(20);
+    return "Cleared\n".repeat(40);
 }
 
 // function sleep(milliseconds) {
