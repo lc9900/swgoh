@@ -63,6 +63,7 @@ let guild = {},
     guild_store_a = {toons: {}, ships: {}}, guild_store_b = {toons:{}, ships:{}};
 
 function twParseGuild(players, guild_store){
+    let relic_tier;
 
     players.forEach(player => {
         player.units.forEach(unit => {
@@ -71,13 +72,14 @@ function twParseGuild(players, guild_store){
                 if(tracked_toon_stats.gear_level.includes(unit.data.gear_level)){
                     guild_store.toons[unit.data.name].gear_level[unit.data.gear_level]++;
                 }
-                if(tracked_toon_stats.relic_tier.includes(unit.data.relic_tier)){
-                    guild_store.toons[unit.data.name].relic_tier[unit.data.relic_tier]++;
-
-                    // debug
-                    // if(unit.data.relic_tier === 1 && unit.data.name === "General Kenobi"){
-                    //     console.log("GK R1 data: " + JSON.stringify(unit, null, 2));
-                    // }
+                if(typeof unit.data.relic_tier === 'number'){
+                    if(tracked_toon_stats.relic_tier.includes(unit.data.relic_tier - 2)){
+                        guild_store.toons[unit.data.name].relic_tier[unit.data.relic_tier - 2]++;
+                        // debug
+                        // if(unit.data.relic_tier === 1 && unit.data.name === "General Kenobi"){
+                        //     console.log("GK R1 data: " + JSON.stringify(unit, null, 2));
+                        // }
+                    }
                 }
             }
 
@@ -117,20 +119,20 @@ function twCompare(guild_a, guild_b){
         // str += `***relic***\n`;
 
         // Relic tier data from swgoh is all wrong. Commenting this out.
-        // for(i = 0; i < tracked_toon_stats.relic_tier.length; i++){
-        //     level = tracked_toon_stats.relic_tier[i];
-        //     let a = guild_store_a.toons[toon].relic_tier[level],
-        //         b = guild_store_b.toons[toon].relic_tier[level];
-        //     if(a === 0 && b === 0) continue;
+        for(i = 0; i < tracked_toon_stats.relic_tier.length; i++){
+            level = tracked_toon_stats.relic_tier[i];
+            let a = guild_store_a.toons[toon].relic_tier[level],
+                b = guild_store_b.toons[toon].relic_tier[level];
+            if (isNaN(a))
+            if(a === 0 && b === 0) continue;
 
-        //     str +=`R${level}: ${a} vs ${b}\n`;
-        // }
+            str +=`R${level}: ${a} vs ${b}\n`;
+        }
 
-        // res.push(str);
-        // str = '';
         if(str.length > 1900){
             res.push(str);
             str = `=== ${guild_a.data.name} vs ${guild_b.data.name} ===\n\n`;
+            str += `GP: ${guild_a.data.galactic_power} vs ${guild_b.data.galactic_power}\n\n`;
         }
     }
 
@@ -149,6 +151,7 @@ function twCompare(guild_a, guild_b){
         if(str.length > 1900){
             res.push(str);
             str = `=== ${guild_a.data.name} vs ${guild_b.data.name} ===\n\n`;
+            str += `GP: ${guild_a.data.galactic_power} vs ${guild_b.data.galactic_power}\n\n`;
         }
     }
     // res.push(str);
@@ -423,9 +426,16 @@ function findAllRelic(players, relic_tier=7){
     players.forEach(player =>{
         let units = player.units;
         units.forEach(unit => {
-            if(unit.data.relic_tier && unit.data.relic_tier >= relic_tier){
+            if(unit.data.relic_tier && unit.data.relic_tier - 2 >= relic_tier){
                 if(res[unit.data.name]) res[unit.data.name]++;
                 else res[unit.data.name] = 1;
+
+                // if(unit.data.name == "General Grievous") {
+                //     console.log({
+                //         Player: player.data.name,
+                //         Grievous: unit.data
+                //     });
+                // }
             }
         });
     });
