@@ -336,6 +336,12 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                         });
                     });
                 break;
+            case 'clear':
+                bot.sendMessage({
+                   to: channelID,
+                   message: clearScreen(),
+                });
+                break;
             case 'tw':
                 initGuildStore(guild_store_a);
                 initGuildStore(guild_store_b);
@@ -477,6 +483,10 @@ function findBugs(players, gear_level=10){
     // console.log(table(table_data, table_config));
     // return table(table_data, table_config);
     return str += JSON.stringify(res, null, 2).replace(/{|}/g, "");
+}
+
+function clearScreen(){
+    return "Cleared\n".repeat(20);
 }
 
 // function sleep(milliseconds) {
