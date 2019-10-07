@@ -377,11 +377,35 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                     })
                     .catch(err => console.log(err));
                 break;
+            case 'issue':
+                axios.get(base_url + "/guild/" + my_guild_id)
+                    .then(response => response.data)
+                    .then(data => {
+                        guild = data,
+                        bot.sendMessage({
+                            to: channelID,
+                            message: '```' + findIssues(guild.players) + '```',
+                        });
+                    });
+                break;
             case 'test':
                 bot.sendMessage({
                    to: channelID,
                    message: "This command is reserved for testing."
                 });
+                //////////////
+                /////////// Find issues
+                // axios.get(base_url + "/guild/" + my_guild_id)
+                //     .then(response => response.data)
+                //     .then(data => {
+                //         guild = data,
+                //         bot.sendMessage({
+                //             to: channelID,
+                //             message: findIssues(guild.players),
+                //         });
+                //     });
+
+                /////////////////////////////
                 // initGuildStore(guild_store_a);
                 // initGuildStore(guild_store_b);
                 // axios.get(base_url + "/guild/" + args[0])
@@ -456,6 +480,27 @@ function findAllRelic(players, relic_tier=7){
     // return table(table_data, table_config);
 
     return str += JSON.stringify(res, null, 2).replace(/{|}/g, "");
+}
+
+function findIssues(players){
+    let table_data = [], res = {}, str = "========== G13 Toon at Relic 0 ==========\n", name;
+    players.forEach(player =>{
+        let units = player.units, name = player.data.name;
+        units.forEach(unit => {
+            if(unit.data.relic_tier && unit.data.relic_tier - 2 == 0 && unit.gear_level == 13){
+                if(!res[name]) res[name] = [];
+                res[name].push(unit.data.name);
+            }
+        });
+    });
+
+    if(Object.keys(res).length > 0) {
+        for(let key in res){
+            str += `${key}: ${JSON.stringify(res[key])} \n`;
+        }
+    } else str += "None found!";
+
+    return str;
 }
 
 function findBugs(players, gear_level=10){
