@@ -134,6 +134,8 @@ Long Live Thrace!
 "Mine! -- farnication",
 "I am too good for halo. -- Keanu Reeves",
 "Kneel before Cody! -- Cody",
+"Do I look like a cat to ya boy? -- Cody",
+"Right Meow! -- Cody",
 ];
 module.exports = {
     compliments, dis, money, halo, fight, quotes,
