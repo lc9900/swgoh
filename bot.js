@@ -69,6 +69,7 @@ function twParseGuild(players, guild_store){
         player.units.forEach(unit => {
             if(tracked_toons.includes(unit.data.name)){
                 // console.log(`found ${unit.data.name}`);
+                guild_store.toons[unit.data.name].total++;
                 if(tracked_toon_stats.gear_level.includes(unit.data.gear_level)){
                     guild_store.toons[unit.data.name].gear_level[unit.data.gear_level]++;
                 }
@@ -85,7 +86,8 @@ function twParseGuild(players, guild_store){
 
             // Ships now
             if(tracked_ships.includes(unit.data.name)){
-                // console.log(`found ${unit.data.name}`);
+                // console.log(`found ${unit.data.name}`)
+                guild_store.ships[unit.data.name].total++;;
                 if(tracked_ship_stats.rarity.includes(unit.data.rarity)){
                     guild_store.ships[unit.data.name].rarity[unit.data.rarity]++;
                 }
@@ -106,7 +108,7 @@ function twCompare(guild_a, guild_b){
     for(toon in guild_store_a.toons){
         str += `*** ${toon} ***\n`;
         // res.push(`*** ${toon} gear compare ***\n`);
-
+        str += `Total: ${guild_store_a.toons[toon].total} vs ${guild_store_b.toons[toon].total}\n`;
         for(i = 0; i < tracked_toon_stats.gear_level.length; i++){
             level = tracked_toon_stats.gear_level[i];
             let a = guild_store_a.toons[toon].gear_level[level],
@@ -137,6 +139,7 @@ function twCompare(guild_a, guild_b){
 
     for(ship in guild_store_a.ships){
         str += `*** ${ship} ***\n`;
+        str += `Total: ${guild_store_a.ships[ship].total} vs ${guild_store_b.ships[ship].total}\n`;
 
         for(i = 0; i < tracked_ship_stats.rarity.length; i++){
             level = tracked_ship_stats.rarity[i];
@@ -184,6 +187,7 @@ function initGuildStore(guild_store){
     let stat;
     tracked_toons.forEach(toon => {
        guild_store.toons[toon] = {};
+       guild_store.toons[toon].total = 0;
        for(stat in tracked_toon_stats){
          let list = tracked_toon_stats[stat];
          //guild_store["General Kenobi"]["gear_level"]
@@ -196,6 +200,7 @@ function initGuildStore(guild_store){
     });
     tracked_ships.forEach(ship => {
        guild_store.ships[ship] = {};
+       guild_store.ships[ship].total = 0;
        for(stat in tracked_ship_stats){
          let list = tracked_ship_stats[stat];
          guild_store.ships[ship][stat] = {};
@@ -393,6 +398,7 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                    to: channelID,
                    message: "This command is reserved for testing."
                 });
+                break;
                 //////////////
                 /////////// Find issues
                 // axios.get(base_url + "/guild/" + my_guild_id)
@@ -406,6 +412,7 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                 //     });
 
                 /////////////////////////////
+                //////// tw compare //////////////////
                 // initGuildStore(guild_store_a);
                 // initGuildStore(guild_store_b);
                 // axios.get(base_url + "/guild/" + args[0])
@@ -427,20 +434,19 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                 //     .then(() => {
                 //         let res = twCompare(guild_a, guild_b), i = 0;
                 //         // console.log(res);
-                //         console.log(res.length);
-
+                //         // console.log(res.length);
+                //         // console.log(JSON.stringify(guild_store_b, null, 2));
                 //         for(let i = 0; i < res.length; i++){
-                //             console.log(res[i].length);
+                //             // console.log(res[i].length);
                 //             bot.sendMessage({
                 //                to: channelID,
                 //                message: '```' + res[i] + '```',
                 //             });
-                //             sleep(10000);
+                //             sleep(5000);
                 //         }
                 //     })
                 //     .catch(err => console.log(err));
                 // break;
-                break;
             default:
                 bot.sendMessage({
                    to: channelID,
