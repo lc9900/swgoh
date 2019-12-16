@@ -25,6 +25,7 @@ let guild = {},
     tracked_toons = [
         'Darth Revan',
         'Darth Malak',
+        'General Skywalker',
         'HK-47',
         'Bastila Shan (Fallen)',
         'Bossk',
@@ -47,6 +48,7 @@ let guild = {},
         'CT-21-0408 "Echo"',
         'Clone Sergeant - Phase I',
         'General Kenobi',
+        'Grand Admiral Thrawn',
     ],
     tracked_ships = [
         "Hound's Tooth",
@@ -102,7 +104,8 @@ function twCompare(guild_a, guild_b){
     twParseGuild(guild_a.players, guild_store_a);
     twParseGuild(guild_b.players, guild_store_b);
 
-    str += `GP: ${guild_a.data.galactic_power} vs ${guild_b.data.galactic_power}\n\n`;
+    str += `GP: ${guild_a.data.galactic_power} vs ${guild_b.data.galactic_power}\n`;
+    str += `Registered Players: ${guild_a.players.length} vs ${guild_b.players.length}\n\n`;
 
     // console.log(JSON.stringify(guild_store_a, null, 2));
     for(toon in guild_store_a.toons){
@@ -132,8 +135,9 @@ function twCompare(guild_a, guild_b){
 
         if(str.length > 1900){
             res.push(str);
-            str = `=== ${guild_a.data.name} vs ${guild_b.data.name} ===\n\n`;
-            str += `GP: ${guild_a.data.galactic_power} vs ${guild_b.data.galactic_power}\n\n`;
+            str = `${guild_a.data.name} vs ${guild_b.data.name}\n\n`;
+            str += `GP: ${guild_a.data.galactic_power} vs ${guild_b.data.galactic_power}\n`;
+            str += `Registered Players: ${guild_a.players.length} vs ${guild_b.players.length}\n\n`;
         }
     }
 
@@ -155,8 +159,9 @@ function twCompare(guild_a, guild_b){
 
         if(str.length > 1900){
             res.push(str);
-            str = `=== ${guild_a.data.name} vs ${guild_b.data.name} ===\n\n`;
-            str += `GP: ${guild_a.data.galactic_power} vs ${guild_b.data.galactic_power}\n\n`;
+            str = `${guild_a.data.name} vs ${guild_b.data.name}\n\n`;
+            str += `GP: ${guild_a.data.galactic_power} vs ${guild_b.data.galactic_power}\n`;
+            str += `Registered Players: ${guild_a.players.length} vs ${guild_b.players.length}\n\n`;
         }
     }
     // res.push(str);
@@ -331,14 +336,19 @@ bot.on('message', function (user, userID, channelID, message, evt) {
 
                 break;
             case 'self':
+                initGuildStore(guild_store_a);
                 axios.get(base_url + "/guild/" + my_guild_id)
                     .then(response => response.data)
                     .then(data => {
-                        guild = data,
-                        bot.sendMessage({
-                            to: channelID,
-                            message: findAllRelic(guild.players),
-                        });
+                        let res = selfEval(data);
+                        for(let i = 0; i < res.length; i++){
+                            // console.log(res[i].length);
+                            bot.sendMessage({
+                               to: channelID,
+                               message: '```' + res[i] + '```',
+                            });
+                            sleep(5000);
+                        }
                     });
                 break;
             case 'clear':
@@ -556,4 +566,69 @@ function sleep(ms){
   while(end - start < ms){
     end = Date.now();
   }
+}
+
+function selfEval(guild_a){
+    let res = [], level, toon, ship, i, table_data = [], res_a = {}, res_b = {},
+        str = `${guild_a.data.name} \n`;;
+    twParseGuild(guild_a.players, guild_store_a);
+
+    str += `GP: ${guild_a.data.galactic_power}\n\n`;
+
+    // console.log(JSON.stringify(guild_store_a, null, 2));
+    for(toon in guild_store_a.toons){
+        str += `*** ${toon} ***\n`;
+        // res.push(`*** ${toon} gear compare ***\n`);
+        str += `Total: ${guild_store_a.toons[toon].total}\n`;
+        for(i = 0; i < tracked_toon_stats.gear_level.length; i++){
+            level = tracked_toon_stats.gear_level[i];
+            let a = guild_store_a.toons[toon].gear_level[level];
+            if(a === 0) continue;
+
+            str +=`G${level}: ${a}\n`;
+        }
+        // res.push(str);
+        // str += `***relic***\n`;
+
+        // Relic tier data from swgoh is all wrong. Commenting this out.
+        for(i = 0; i < tracked_toon_stats.relic_tier.length; i++){
+            level = tracked_toon_stats.relic_tier[i];
+            let a = guild_store_a.toons[toon].relic_tier[level];
+            if(a === 0) continue;
+
+            str +=`R${level}: ${a}\n`;
+        }
+
+        if(str.length > 1900){
+            res.push(str);
+            str = `${guild_a.data.name} \n\n`;
+            str += `GP: ${guild_a.data.galactic_power}\n\n`;
+        }
+    }
+
+    for(ship in guild_store_a.ships){
+        str += `*** ${ship} ***\n`;
+        str += `Total: ${guild_store_a.ships[ship].total}\n`;
+
+        for(i = 0; i < tracked_ship_stats.rarity.length; i++){
+            level = tracked_ship_stats.rarity[i];
+            let a = guild_store_a.ships[ship].rarity[level];
+            if(a == 0) {
+                // console.log("found both zero");
+                continue;
+            }
+
+            str += `${level}*: ${a}\n`;
+        }
+
+        if(str.length > 1900){
+            res.push(str);
+            str = `${guild_a.data.name} \n`;
+            str += `GP: ${guild_a.data.galactic_power}\n\n`;
+        }
+    }
+
+    if(str.length > 0) res.push(str);
+    // console.log(JSON.stringify(res, null, 2));
+    return res;
 }
