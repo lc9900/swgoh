@@ -105,7 +105,7 @@ function twCompare(guild_a, guild_b){
     twParseGuild(guild_b.players, guild_store_b);
 
     str += `GP: ${guild_a.data.galactic_power} vs ${guild_b.data.galactic_power}\n`;
-    str += `Registered Players: ${guild_a.players.length} vs ${guild_b.players.length}\n\n`;
+    str += `Players: ${guild_a.players.length} vs ${guild_b.players.length}\n\n`;
 
     // console.log(JSON.stringify(guild_store_a, null, 2));
     for(toon in guild_store_a.toons){
@@ -137,7 +137,7 @@ function twCompare(guild_a, guild_b){
             res.push(str);
             str = `${guild_a.data.name} vs ${guild_b.data.name}\n\n`;
             str += `GP: ${guild_a.data.galactic_power} vs ${guild_b.data.galactic_power}\n`;
-            str += `Registered Players: ${guild_a.players.length} vs ${guild_b.players.length}\n\n`;
+            str += `Players: ${guild_a.players.length} vs ${guild_b.players.length}\n\n`;
         }
     }
 
@@ -161,7 +161,7 @@ function twCompare(guild_a, guild_b){
             res.push(str);
             str = `${guild_a.data.name} vs ${guild_b.data.name}\n\n`;
             str += `GP: ${guild_a.data.galactic_power} vs ${guild_b.data.galactic_power}\n`;
-            str += `Registered Players: ${guild_a.players.length} vs ${guild_b.players.length}\n\n`;
+            str += `Players: ${guild_a.players.length} vs ${guild_b.players.length}\n\n`;
         }
     }
     // res.push(str);
