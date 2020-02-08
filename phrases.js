@@ -136,6 +136,8 @@ Long Live Thrace!
 "Kneel before Cody! -- Cody",
 "Do I look like a cat to ya boy? -- Cody",
 "Right Meow! -- Cody",
+"Brb while I fly over you -- farnication",
+"F your p1 score! -- Cody",
 ];
 module.exports = {
     compliments, dis, money, halo, fight, quotes,
