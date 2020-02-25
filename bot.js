@@ -133,7 +133,7 @@ function twCompare(guild_a, guild_b){
             str +=`R${level}: ${a} vs ${b}\n`;
         }
 
-        if(str.length > 1900){
+        if(str.length > 1500){
             res.push(str);
             str = `${guild_a.data.name} vs ${guild_b.data.name}\n\n`;
             str += `GP: ${guild_a.data.galactic_power} vs ${guild_b.data.galactic_power}\n`;
@@ -157,7 +157,7 @@ function twCompare(guild_a, guild_b){
             str += `${level}*: ${a} vs ${b}\n`;
         }
 
-        if(str.length > 1900){
+        if(str.length > 1500){
             res.push(str);
             str = `${guild_a.data.name} vs ${guild_b.data.name}\n\n`;
             str += `GP: ${guild_a.data.galactic_power} vs ${guild_b.data.galactic_power}\n`;
