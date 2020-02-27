@@ -269,6 +269,10 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                     message: phrases.quotes[num]
                 });
                 break;
+            // https://cdn.discordapp.com/attachments/353622124839043076/682413698496593966/image0.gif
+            case 'ep':
+                sendFiles(channelID, ["ep.gif"]);
+                break;
             case 'fight':
                 who = args[0]? args[0]+"! ": user+"! ";
                 args = args.splice(1);
@@ -631,4 +635,26 @@ function selfEval(guild_a){
     if(str.length > 0) res.push(str);
     // console.log(JSON.stringify(res, null, 2));
     return res;
+}
+
+function sendFiles(channelID, fileArr, interval) {
+    var resArr = [], len = fileArr.length;
+    var callback = typeof(arguments[2]) === 'function' ? arguments[2] : arguments[3];
+    if (typeof(interval) !== 'number') interval = 1000;
+
+    function _sendFiles() {
+        setTimeout(function() {
+            if (fileArr[0]) {
+                bot.uploadFile({
+                    to: channelID,
+                    file: fileArr.shift()
+                }, function(err, res) {
+                    resArr.push(err || res);
+                    if (resArr.length === len) if (typeof(callback) === 'function') callback(resArr);
+                });
+                _sendFiles();
+            }
+        }, interval);
+    }
+    _sendFiles();
 }
