@@ -22,6 +22,11 @@ let guild = {},
             1:{alignment: 'center', width: 5},
         },
     },
+    images = [
+        "ep.gif",
+        "sex_choco.gif",
+        "dance_wiener.gif",
+    ],
     tracked_toons = [
         'Darth Revan',
         'Darth Malak',
@@ -271,7 +276,8 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                 break;
             // https://cdn.discordapp.com/attachments/353622124839043076/682413698496593966/image0.gif
             case 'ep':
-                sendFiles(channelID, ["ep.gif"]);
+                num = Math.floor(Math.random() * images.length);
+                sendFiles(channelID, [images[num]]);
                 break;
             case 'fight':
                 who = args[0]? args[0]+"! ": user+"! ";
