@@ -26,6 +26,7 @@ let guild = {},
         "ep.gif",
         "sex_choco.gif",
         "dance_wiener.gif",
+        "r2piss.gif",
     ],
     tracked_toons = [
         'Darth Revan',
