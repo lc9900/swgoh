@@ -473,43 +473,43 @@ client.on('message', async message => {
             case 'test':
                 await message.channel.send("This command is reserved for testing.");
 
-                initGuildStore(guild_store_a);
-                initGuildStore(guild_store_b);
-                axios.get(base_url + "/guild/" + args[0])
-                    .then(response => response.data)
-                    .then(data => {
-                        let url = '';
-                        // twParseGuild(data.players, guild_store_a);
-                        guild_a = data;
-                        if(args[1] === undefined){
-                            url = base_url + "/guild/" + my_guild_id;
-                        }
-                        else url = base_url + "/guild/" + args[1];
-                        return axios.get(url)
-                            .then(response => response.data)
-                            .then(data => {
-                                return guild_b = data;
-                            })
-                    })
-                    .then(async () => {
-                        let res = twCompare(guild_a, guild_b), i = 0;
-                        // console.log(res);
-                        // console.log(res.length);
-                        // console.log(JSON.stringify(guild_store_b, null, 2));
+                // initGuildStore(guild_store_a);
+                // initGuildStore(guild_store_b);
+                // axios.get(base_url + "/guild/" + args[0])
+                //     .then(response => response.data)
+                //     .then(data => {
+                //         let url = '';
+                //         // twParseGuild(data.players, guild_store_a);
+                //         guild_a = data;
+                //         if(args[1] === undefined){
+                //             url = base_url + "/guild/" + my_guild_id;
+                //         }
+                //         else url = base_url + "/guild/" + args[1];
+                //         return axios.get(url)
+                //             .then(response => response.data)
+                //             .then(data => {
+                //                 return guild_b = data;
+                //             })
+                //     })
+                //     .then(async () => {
+                //         let res = twCompare(guild_a, guild_b), i = 0;
+                //         // console.log(res);
+                //         // console.log(res.length);
+                //         // console.log(JSON.stringify(guild_store_b, null, 2));
 
-                        message.channel.send({embed: Object.assign(res, embed)});
+                //         message.channel.send({embed: Object.assign(res, embed)});
 
-                        // for(let i = 0; i < res.length; i++){
-                        //     // console.log(res[i].length);
-                        //     await message.channel.send('```' + res[i] + '```');
-                        //     // bot.sendMessage({
-                        //     //    to: channelID,
-                        //     //    message: '```' + res[i] + '```',
-                        //     // });
-                        //     sleep(5000);
-                        // }
-                    })
-                    .catch(err => console.log(err));
+                //         // for(let i = 0; i < res.length; i++){
+                //         //     // console.log(res[i].length);
+                //         //     await message.channel.send('```' + res[i] + '```');
+                //         //     // bot.sendMessage({
+                //         //     //    to: channelID,
+                //         //     //    message: '```' + res[i] + '```',
+                //         //     // });
+                //         //     sleep(5000);
+                //         // }
+                //     })
+                //     .catch(err => console.log(err));
                 break;
             default:
                 await message.channel.send("I don't understand the words that are coming out of your mouth....");
