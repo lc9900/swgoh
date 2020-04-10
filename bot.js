@@ -1,11 +1,31 @@
-var Discord = require('discord.io');
+// https://discordjs.guide/
+// https://discord.js.org/
+
+var Discord = require('discord.js');
 var logger = require('winston');
 var phrases = require('./phrases');
 const axios = require('axios');
 const table = require('table').table;
 const base_url = "https://swgoh.gg/api";
 const my_guild_id = 8665;
-
+let embed = {
+    color: '#0099ff',
+    // title: "Guild vs Us",
+    // description: "GP vs GP",
+    // fields: [{
+    //     name: "Fields",
+    //     value: "They can have different fields with small headlines."
+    //   },
+    //   {
+    //     name: "Masked links",
+    //     value: "You can put [masked links](http://google.com) inside of rich embeds."
+    //   },
+    //   {
+    //     name: "Markdown",
+    //     value: "You can put all the *usual* **__Markdown__** inside of them."
+    //   }
+    // ],
+  };
 
 let BOT_TOKEN = process.env.BOT_TOKEN;
 
@@ -29,6 +49,8 @@ let guild = {},
         "r2piss.gif",
     ],
     tracked_toons = [
+        'Supreme Leader Kylo Ren',
+        'Rey',
         'Darth Revan',
         'Darth Malak',
         'General Skywalker',
@@ -39,27 +61,20 @@ let guild = {},
         'Padmé Amidala',
         'Jedi Knight Revan',
         'Grand Master Yoda',
-        'Chewbacca',
-        'C-3PO',
         'Darth Traya',
-        'Jedi Knight Anakin',
-        'Carth Onasi',
+        'Jedi Knight Anakin',,
         'General Grievous',
-        'Enfys Nest',
-        'Mission Vao',
-        'Zaalbar',
-        'CC-2224 "Cody"',
         'CT-5555 "Fives"',
         'CT-7567 "Rex"',
         'CT-21-0408 "Echo"',
-        'Clone Sergeant - Phase I',
         'General Kenobi',
-        'Grand Admiral Thrawn',
     ],
     tracked_ships = [
         "Hound's Tooth",
         "Han's Millennium Falcon",
-        "Bistan's U-wing",
+        "Anakin's Eta-2 Starfighter",
+        "Negotiator",
+        "Malevolence",
     ],
     tracked_toon_stats = {
         "gear_level": [11,12,13],
@@ -105,26 +120,33 @@ function twParseGuild(players, guild_store){
 }
 
 function twCompare(guild_a, guild_b){
-    let res = [], level, toon, ship, i, table_data = [], res_a = {}, res_b = {},
+    let res = {fields: []}, level, toon, ship, i, table_data = [], res_a = {}, res_b = {}, value = "",
         str = `${guild_a.data.name} vs ${guild_b.data.name}\n`;
     twParseGuild(guild_a.players, guild_store_a);
     twParseGuild(guild_b.players, guild_store_b);
 
-    str += `GP: ${guild_a.data.galactic_power} vs ${guild_b.data.galactic_power}\n`;
-    str += `Players: ${guild_a.players.length} vs ${guild_b.players.length}\n\n`;
+    res.title = `${guild_a.data.name} vs ${guild_b.data.name}`;
+    res.description = `**Players**: ${guild_a.players.length} vs ${guild_b.players.length}\n**GP**: ${guild_a.data.galactic_power} vs ${guild_b.data.galactic_power}`;
+
+    // str += `GP: ${guild_a.data.galactic_power} vs ${guild_b.data.galactic_power}\n`;
+    // str += `Players: ${guild_a.players.length} vs ${guild_b.players.length}\n\n`;
 
     // console.log(JSON.stringify(guild_store_a, null, 2));
     for(toon in guild_store_a.toons){
-        str += `*** ${toon} ***\n`;
+        value = `*${guild_store_a.toons[toon].total} vs ${guild_store_b.toons[toon].total}*\n`;
+
+        // str += `*** ${toon} ***\n`;
         // res.push(`*** ${toon} gear compare ***\n`);
-        str += `Total: ${guild_store_a.toons[toon].total} vs ${guild_store_b.toons[toon].total}\n`;
+        // str += `Total: ${guild_store_a.toons[toon].total} vs ${guild_store_b.toons[toon].total}\n`;
         for(i = 0; i < tracked_toon_stats.gear_level.length; i++){
             level = tracked_toon_stats.gear_level[i];
             let a = guild_store_a.toons[toon].gear_level[level],
                 b = guild_store_b.toons[toon].gear_level[level];
             if(a === 0 && b === 0) continue;
 
-            str +=`G${level}: ${a} vs ${b}\n`;
+            // res.fields.push({name: `G${level}`, value: `**${a} vs ${b}**`, inline: true});
+            value +=`**G${level}**: ${a} vs ${b}\n`;
+            // str +=`G${level}: ${a} vs ${b}\n`;
         }
         // res.push(str);
         // str += `***relic***\n`;
@@ -136,20 +158,28 @@ function twCompare(guild_a, guild_b){
                 b = guild_store_b.toons[toon].relic_tier[level];
             if(a === 0 && b === 0) continue;
 
-            str +=`R${level}: ${a} vs ${b}\n`;
+            // res.fields.push({name: `R${level}`, value: `**${a} vs ${b}**`, inline: true});
+            value +=`**R${level}**: ${a} vs ${b}\n`;
+            // str +=`R${level}: ${a} vs ${b}\n`;
         }
-
-        if(str.length > 1500){
-            res.push(str);
-            str = `${guild_a.data.name} vs ${guild_b.data.name}\n\n`;
-            str += `GP: ${guild_a.data.galactic_power} vs ${guild_b.data.galactic_power}\n`;
-            str += `Players: ${guild_a.players.length} vs ${guild_b.players.length}\n\n`;
-        }
+        // res.fields.push({ name: '\u200B', value: '\u200B' });
+        res.fields.push({name: `==${toon}==`, value: value, inline: true});
+        // res.fields.push({name: `Stats`, value: value, inline: true});
+        // res.fields.push({ name: '\u200B', value: '============================================' });
+        // if(str.length > 1500){
+        //     res.push(str);
+        //     str = `${guild_a.data.name} vs ${guild_b.data.name}\n\n`;
+        //     str += `GP: ${guild_a.data.galactic_power} vs ${guild_b.data.galactic_power}\n`;
+        //     str += `Players: ${guild_a.players.length} vs ${guild_b.players.length}\n\n`;
+        // }
     }
 
     for(ship in guild_store_a.ships){
-        str += `*** ${ship} ***\n`;
-        str += `Total: ${guild_store_a.ships[ship].total} vs ${guild_store_b.ships[ship].total}\n`;
+        value = `*${guild_store_a.ships[ship].total} vs ${guild_store_b.ships[ship].total}*\n`;
+        // res.fields.push({name: `${ship}`, value: });
+
+        // str += `*** ${ship} ***\n`;
+        // str += `Total: ${guild_store_a.ships[ship].total} vs ${guild_store_b.ships[ship].total}\n`;
 
         for(i = 0; i < tracked_ship_stats.rarity.length; i++){
             level = tracked_ship_stats.rarity[i];
@@ -160,20 +190,24 @@ function twCompare(guild_a, guild_b){
                 continue;
             }
 
-            str += `${level}*: ${a} vs ${b}\n`;
+            // res.fields.push({name: `${level}*: ${a} vs ${b}`});
+            value += `**${level}***: ${a} vs ${b}\n`;
+            // str += `${level}*: ${a} vs ${b}\n`;
         }
-
-        if(str.length > 1500){
-            res.push(str);
-            str = `${guild_a.data.name} vs ${guild_b.data.name}\n\n`;
-            str += `GP: ${guild_a.data.galactic_power} vs ${guild_b.data.galactic_power}\n`;
-            str += `Players: ${guild_a.players.length} vs ${guild_b.players.length}\n\n`;
-        }
+        // res.fields.push({ name: '\u200B', value: '\u200B' });
+        res.fields.push({name: `==${ship}==`, value: value, inline: true});
+        // if(str.length > 1500){
+        //     res.push(str);
+        //     str = `${guild_a.data.name} vs ${guild_b.data.name}\n\n`;
+        //     str += `GP: ${guild_a.data.galactic_power} vs ${guild_b.data.galactic_power}\n`;
+        //     str += `Players: ${guild_a.players.length} vs ${guild_b.players.length}\n\n`;
+        // }
+        // res.fields.push({ name: '\u200B', value: '=============================================================================' });
     }
     // res.push(str);
 
     // return res;
-    if(str.length > 0) res.push(str);
+    // if(str.length > 0) res.push(str);
     return res;
 }
 
@@ -230,119 +264,134 @@ logger.add(new logger.transports.Console, {
 });
 logger.level = 'debug';
 // Initialize Discord Bot
-var bot = new Discord.Client({
-   token: BOT_TOKEN,
-   autorun: true
-});
-bot.on('ready', function (evt) {
+var client = new Discord.Client();
+
+client.login(BOT_TOKEN);
+
+client.on('ready', function (evt) {
     logger.info('Connected');
-    logger.info('Logged in as: ');
-    logger.info(bot.username + ' - (' + bot.id + ')');
+    logger.info(`Logged in as: ${client.user.tag}`);
 });
-bot.on('message', function (user, userID, channelID, message, evt) {
+// bot.on('message', function (user, userID, channelID, message, evt) {
+client.on('message', async message => {
+    // console.log("We got a message");
     let num, who = '', guild_a, guild_b;
     // Our bot needs to know if it will execute a command
     // It will listen for messages that will start with `!`
-    if (message.substring(0, 4) == '/cb ') {
-        var args = message.substring(4).split(' ');
+    if (message.content.substring(0, 4) == '/cb ') {
+        var args = message.content.substring(4).split(' ');
         var cmd = args[0];
 
         args = args.splice(1);
         switch(cmd) {
             // !ping
             case 'light':
-                who = args[0]? args[0]+"! ": user+"! ";
+                who = args[0]? args[0]+"! ": message.author.username +"! ";
                 args = args.splice(1);
                 num = Math.floor(Math.random() * phrases.compliments.length);
-                bot.sendMessage({
-                    to: channelID,
-                    message: who + phrases.compliments[num]
-                });
+                await message.channel.send(who + phrases.compliments[num]);
+                // bot.sendMessage({
+                //     to: channelID,
+                //     message: who + phrases.compliments[num]
+                // });
                 break;
             case 'dark':
-                who = args[0]? args[0]+"! ": user+"! ";
+                who = args[0]? args[0]+"! ": message.author.username +"! ";
                 args = args.splice(1);
                 num = Math.floor(Math.random() * phrases.dis.length);
-                bot.sendMessage({
-                    to: channelID,
-                    message: who + phrases.dis[num]
-                });
+                await message.channel.send(who + phrases.dis[num]);
+                // bot.sendMessage({
+                //     to: channelID,
+                //     message: who + phrases.dis[num]
+                // });
                 break;
             case 'quote':
                 num = Math.floor(Math.random() * phrases.quotes.length);
-                bot.sendMessage({
-                    to: channelID,
-                    message: phrases.quotes[num]
-                });
+                await message.channel.send(phrases.quotes[num]);
+                // bot.sendMessage({
+                //     to: channelID,
+                //     message: phrases.quotes[num]
+                // });
                 break;
             // https://cdn.discordapp.com/attachments/353622124839043076/682413698496593966/image0.gif
             case 'ep':
                 num = Math.floor(Math.random() * images.length);
-                sendFiles(channelID, [images[num]]);
+                await message.channel.send({
+                    files: [{
+                        attachment: `./${images[num]}`,
+                        name: images[num],
+                    }],
+                });
+                // sendFiles(channelID, [images[num]]);
                 break;
             case 'fight':
-                who = args[0]? args[0]+"! ": user+"! ";
+                who = args[0]? args[0]+"! ": message.author.username +"! ";
                 args = args.splice(1);
                 num = Math.floor(Math.random() * phrases.fight.length);
-                bot.sendMessage({
-                    to: channelID,
-                    message: who + phrases.fight[num]
-                });
+                await message.channel.send(who + phrases.fight[num]);
+                // bot.sendMessage({
+                //     to: channelID,
+                //     message: who + phrases.fight[num]
+                // });
                 break;
             case 'charge':
-                who = args[0]? args[0]+"! ": user+"! ";
+                who = args[0]? args[0]+"! ": message.author.username +"! ";
                 args = args.splice(1);
                 num = Math.floor(Math.random() * phrases.money.length);
-                bot.sendMessage({
-                    to: channelID,
-                    message: who + phrases.money[num]
-                });
+                await message.channel.send(who + phrases.money[num]);
+                // bot.sendMessage({
+                //     to: channelID,
+                //     message: who + phrases.money[num]
+                // });
                 break;
             case 'thraceme':
-                bot.sendMessage({
-                    to: channelID,
-                    message: "Congratulations Thrace, that is awesome for you!"
-                }, () => {
-                    bot.sendMessage({
-                        to: channelID,
-                        message: "Thrace: Thanks! Pretty excited about it myself. You are awesome yourself"
-                    });
-                });
+                await message.channel.send("Congratulations Thrace, that is awesome for you!");
+                await message.channel.send("Thrace: Thanks! Pretty excited about it myself. You are awesome yourself");
+                // bot.sendMessage({
+                //     to: channelID,
+                //     message: "Congratulations Thrace, that is awesome for you!"
+                // }, () => {
+                //     bot.sendMessage({
+                //         to: channelID,
+                //         message: "Thrace: Thanks! Pretty excited about it myself. You are awesome yourself"
+                //     });
+                // });
                 break;
             case 'flip':
-                who = args[0]? args[0]+"! ": user+"! ";
+                who = args[0]? args[0]+"! ": message.author.username +"! ";
                 args = args.splice(1);
-
-                bot.sendMessage({
-                    to: channelID,
-                    message: who + ":middle_finger:".repeat(Math.floor(Math.random() * 20) + 5)
-                });
+                await message.channel.send(who + ":middle_finger:".repeat(Math.floor(Math.random() * 20) + 5));
+                // bot.sendMessage({
+                //     to: channelID,
+                //     message: who + ":middle_finger:".repeat(Math.floor(Math.random() * 20) + 5)
+                // });
                 break;
             case 'snowflake':
-                who = args[0]? args[0]+"! ": user+"! ";
+                who = args[0]? args[0]+"! ": message.author.username +"! ";
                 args = args.splice(1);
-
-                bot.sendMessage({
-                    to: channelID,
-                    message: who + ":snowflake:".repeat(Math.floor(Math.random() * 20) + 5)
-                });
+                await message.channel.send(who + ":snowflake:".repeat(Math.floor(Math.random() * 20) + 5));
+                // bot.sendMessage({
+                //     to: channelID,
+                //     message: who + ":snowflake:".repeat(Math.floor(Math.random() * 20) + 5)
+                // });
                 break;
             case 'halo':
-                who = args[0]? args[0]+"! ": user+"! ";
+                who = args[0]? args[0]+"! ": message.author.username +"! ";
                 args = args.splice(1);
                 num = Math.floor(Math.random() * phrases.halo.length);
                 if(who.includes('secret')){
-
-                    bot.sendMessage({
-                        to: channelID,
-                        message: "Cody made me do it!"
-                    });
+                    await message.channel.send("Cody made me do it!");
+                    // bot.sendMessage({
+                    //     to: channelID,
+                    //     message: "Cody made me do it!"
+                    // });
                 }
                 else {
-                    bot.sendMessage({
-                        to: channelID,
-                        message: who + phrases.halo[num]
-                    });
+                    await message.channel.send(who + phrases.halo[num]);
+                    // bot.sendMessage({
+                    //     to: channelID,
+                    //     message: who + phrases.halo[num]
+                    // });
                 }
 
                 break;
@@ -350,23 +399,25 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                 initGuildStore(guild_store_a);
                 axios.get(base_url + "/guild/" + my_guild_id)
                     .then(response => response.data)
-                    .then(data => {
+                    .then(async data => {
                         let res = selfEval(data);
                         for(let i = 0; i < res.length; i++){
                             // console.log(res[i].length);
-                            bot.sendMessage({
-                               to: channelID,
-                               message: '```' + res[i] + '```',
-                            });
+                            await message.channel.send('```' + res[i] + '```');
+                            // bot.sendMessage({
+                            //    to: channelID,
+                            //    message: '```' + res[i] + '```',
+                            // });
                             sleep(5000);
                         }
                     });
                 break;
             case 'clear':
-                bot.sendMessage({
-                   to: channelID,
-                   message: clearScreen(),
-                });
+                await message.channel.send(clearScreen());
+                // bot.sendMessage({
+                //    to: channelID,
+                //    message: clearScreen(),
+                // });
                 break;
             case 'tw':
                 initGuildStore(guild_store_a);
@@ -387,92 +438,85 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                                 return guild_b = data;
                             })
                     })
-                    .then(() => {
+                    .then(async () => {
                         let res = twCompare(guild_a, guild_b), i = 0;
                         // console.log(res);
                         // console.log(res.length);
                         // console.log(JSON.stringify(guild_store_b, null, 2));
-                        for(let i = 0; i < res.length; i++){
-                            // console.log(res[i].length);
-                            bot.sendMessage({
-                               to: channelID,
-                               message: '```' + res[i] + '```',
-                            });
-                            sleep(5000);
-                        }
+
+                        message.channel.send({embed: Object.assign(res, embed)});
+
+                        // for(let i = 0; i < res.length; i++){
+                        //     // console.log(res[i].length);
+                        //     await message.channel.send('```' + res[i] + '```');
+                        //     // bot.sendMessage({
+                        //     //    to: channelID,
+                        //     //    message: '```' + res[i] + '```',
+                        //     // });
+                        //     sleep(5000);
+                        // }
                     })
                     .catch(err => console.log(err));
                 break;
             case 'issue':
                 axios.get(base_url + "/guild/" + my_guild_id)
                     .then(response => response.data)
-                    .then(data => {
+                    .then(async data => {
                         guild = data,
-                        bot.sendMessage({
-                            to: channelID,
-                            message: '```' + findIssues(guild.players) + '```',
-                        });
+                        await message.channel.send('```' + findIssues(guild.players) + '```');
+                        // bot.sendMessage({
+                        //     to: channelID,
+                        //     message: '```' + findIssues(guild.players) + '```',
+                        // });
                     });
                 break;
             case 'test':
-                bot.sendMessage({
-                   to: channelID,
-                   message: "This command is reserved for testing."
-                });
-                break;
-                //////////////
-                /////////// Find issues
-                // axios.get(base_url + "/guild/" + my_guild_id)
-                //     .then(response => response.data)
-                //     .then(data => {
-                //         guild = data,
-                //         bot.sendMessage({
-                //             to: channelID,
-                //             message: findIssues(guild.players),
-                //         });
-                //     });
+                await message.channel.send("This command is reserved for testing.");
 
-                /////////////////////////////
-                //////// tw compare //////////////////
-                // initGuildStore(guild_store_a);
-                // initGuildStore(guild_store_b);
-                // axios.get(base_url + "/guild/" + args[0])
-                //     .then(response => response.data)
-                //     .then(data => {
-                //         let url = '';
-                //         // twParseGuild(data.players, guild_store_a);
-                //         guild_a = data;
-                //         if(args[1] === undefined){
-                //             url = base_url + "/guild/" + my_guild_id;
-                //         }
-                //         else url = base_url + "/guild/" + args[1];
-                //         return axios.get(url)
-                //             .then(response => response.data)
-                //             .then(data => {
-                //                 return guild_b = data;
-                //             })
-                //     })
-                //     .then(() => {
-                //         let res = twCompare(guild_a, guild_b), i = 0;
-                //         // console.log(res);
-                //         // console.log(res.length);
-                //         // console.log(JSON.stringify(guild_store_b, null, 2));
-                //         for(let i = 0; i < res.length; i++){
-                //             // console.log(res[i].length);
-                //             bot.sendMessage({
-                //                to: channelID,
-                //                message: '```' + res[i] + '```',
-                //             });
-                //             sleep(5000);
-                //         }
-                //     })
-                //     .catch(err => console.log(err));
-                // break;
+                initGuildStore(guild_store_a);
+                initGuildStore(guild_store_b);
+                axios.get(base_url + "/guild/" + args[0])
+                    .then(response => response.data)
+                    .then(data => {
+                        let url = '';
+                        // twParseGuild(data.players, guild_store_a);
+                        guild_a = data;
+                        if(args[1] === undefined){
+                            url = base_url + "/guild/" + my_guild_id;
+                        }
+                        else url = base_url + "/guild/" + args[1];
+                        return axios.get(url)
+                            .then(response => response.data)
+                            .then(data => {
+                                return guild_b = data;
+                            })
+                    })
+                    .then(async () => {
+                        let res = twCompare(guild_a, guild_b), i = 0;
+                        // console.log(res);
+                        // console.log(res.length);
+                        // console.log(JSON.stringify(guild_store_b, null, 2));
+
+                        message.channel.send({embed: Object.assign(res, embed)});
+
+                        // for(let i = 0; i < res.length; i++){
+                        //     // console.log(res[i].length);
+                        //     await message.channel.send('```' + res[i] + '```');
+                        //     // bot.sendMessage({
+                        //     //    to: channelID,
+                        //     //    message: '```' + res[i] + '```',
+                        //     // });
+                        //     sleep(5000);
+                        // }
+                    })
+                    .catch(err => console.log(err));
+                break;
             default:
-                bot.sendMessage({
-                   to: channelID,
-                   message: "I don't understand the words that are coming out of your mouth...."
-                });
+                await message.channel.send("I don't understand the words that are coming out of your mouth....");
+                // bot.sendMessage({
+                //    to: channelID,
+                //    message: "I don't understand the words that are coming out of your mouth...."
+                // });
             // Just add any case commands if you want to..
          }
      }
