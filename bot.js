@@ -47,6 +47,7 @@ let guild = {},
         "sex_choco.gif",
         "dance_wiener.gif",
         "r2piss.gif",
+        "grabmyass.gif",
     ],
     tracked_toons = [
         'Supreme Leader Kylo Ren',
