@@ -35,7 +35,8 @@ if(!BOT_TOKEN){
 }
 
 
-let guild = {},
+let guild = {}, refresh_time,
+    refresh_status = 0, // 0 - not refreshing data right now, 1 - guild data is being refreshed
     table_config = {
         columns:{
             0:{alignment: 'left', width: 8},
@@ -84,7 +85,32 @@ let guild = {},
     tracked_ship_stats = {
         "rarity": [5,6,7],
     },
-    guild_store_a = {toons: {}, ships: {}}, guild_store_b = {toons:{}, ships:{}};
+    guild_store_a, guild_store_b, guild_store_self, guild_data_self;
+    // guild_store_a = {toons: {}, ships: {}}, guild_store_b = {toons:{}, ships:{}}, guild_store_self = {toons:{}, ships:{}};
+
+
+async function refreshGuild(force=false){
+    let now = new Date();
+    // If we never refreshed, or we want to force it, or the data we have is more than 1 day old
+    if(refresh_time === undefined || force === true || timeDiff(refresh_time, now, 'day') > 0){
+        guild_store_self = initGuildStore();
+        refresh_status = 1
+        guild_data_self = await getGuildData(my_guild_id);
+        // console.log(guild_data_self);
+        // console.log(guild_store_self);
+        twParseGuild(guild_data_self.players, guild_store_self);
+        refresh_status = 0;
+        refresh_time  = now;
+    }
+    else {
+        // console.log(`No refresh needed -- refresh_time: ${refresh_time}, force: ${force}, diff: ${timeDiff(refresh_time, now, 'day')}`);
+    }
+}
+
+function getGuildData(id){
+    return  axios.get(base_url + "/guild/" + id)
+            .then(response => response.data);
+}
 
 function twParseGuild(players, guild_store){
     let relic_tier;
@@ -120,11 +146,12 @@ function twParseGuild(players, guild_store){
     });
 }
 
-function twCompare(guild_a, guild_b){
+function twCompare(guild_a, guild_b, self=false){
     let res = {fields: []}, level, toon, ship, i, table_data = [], res_a = {}, res_b = {}, value = "",
         str = `${guild_a.data.name} vs ${guild_b.data.name}\n`;
     twParseGuild(guild_a.players, guild_store_a);
-    twParseGuild(guild_b.players, guild_store_b);
+    if(!self) twParseGuild(guild_b.players, guild_store_b);
+    else guild_store_b = guild_store_self;
 
     res.title = `${guild_a.data.name} vs ${guild_b.data.name}`;
     res.description = `**Players**: ${guild_a.players.length} vs ${guild_b.players.length}\n**GP**: ${guild_a.data.galactic_power} vs ${guild_b.data.galactic_power}`;
@@ -229,8 +256,8 @@ function twCompare(guild_a, guild_b){
 
 // }
 // Call this function when tw command is executed.
-function initGuildStore(guild_store){
-    let stat;
+function initGuildStore(){
+    let stat, guild_store = {toons: {}, ships: {}};
     tracked_toons.forEach(toon => {
        guild_store.toons[toon] = {};
        guild_store.toons[toon].total = 0;
@@ -255,6 +282,7 @@ function initGuildStore(guild_store){
          });
        }
     });
+    return guild_store;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -276,7 +304,7 @@ client.on('ready', function (evt) {
 // bot.on('message', function (user, userID, channelID, message, evt) {
 client.on('message', async message => {
     // console.log("We got a message");
-    let num, who = '', guild_a, guild_b;
+    let num, who = '', guild_a, guild_b, res, self = false;
     // Our bot needs to know if it will execute a command
     // It will listen for messages that will start with `!`
     if (message.content.substring(0, 4) == '/cb ') {
@@ -397,7 +425,7 @@ client.on('message', async message => {
 
                 break;
             case 'self':
-                initGuildStore(guild_store_a);
+                guild_store_a = initGuildStore();
                 axios.get(base_url + "/guild/" + my_guild_id)
                     .then(response => response.data)
                     .then(async data => {
@@ -420,62 +448,31 @@ client.on('message', async message => {
                 //    message: clearScreen(),
                 // });
                 break;
+            case 'refresh':
+                await refreshGuild(true);
+                await message.channel.send("Guild data refreshed");
+                break;
             case 'tw':
-                initGuildStore(guild_store_a);
-                initGuildStore(guild_store_b);
-                axios.get(base_url + "/guild/" + args[0])
-                    .then(response => response.data)
-                    .then(data => {
-                        let url = '';
-                        // twParseGuild(data.players, guild_store_a);
-                        guild_a = data;
-                        if(args[1] === undefined){
-                            url = base_url + "/guild/" + my_guild_id;
-                        }
-                        else url = base_url + "/guild/" + args[1];
-                        return axios.get(url)
-                            .then(response => response.data)
-                            .then(data => {
-                                return guild_b = data;
-                            })
-                    })
-                    .then(async () => {
-                        let res = twCompare(guild_a, guild_b), i = 0;
-                        // console.log(res);
-                        // console.log(res.length);
-                        // console.log(JSON.stringify(guild_store_b, null, 2));
+                guild_store_a = initGuildStore();
+                guild_store_b = initGuildStore();
 
-                        message.channel.send({embed: Object.assign(res, embed)});
+                try{
+                    guild_a = await getGuildData(args[0]);
+                    if(args[1] === undefined){
+                        await refreshGuild();
+                        guild_b = guild_data_self;
+                        self = true;
+                    } else {
+                        guild_b = await getGuildData(args[1]);
+                    }
+                    res = twCompare(guild_a, guild_b, self);
+                    message.channel.send({embed: Object.assign(res, embed)});
+                }
+                catch(err){
+                    console.log(err);
+                }
 
-                        // for(let i = 0; i < res.length; i++){
-                        //     // console.log(res[i].length);
-                        //     await message.channel.send('```' + res[i] + '```');
-                        //     // bot.sendMessage({
-                        //     //    to: channelID,
-                        //     //    message: '```' + res[i] + '```',
-                        //     // });
-                        //     sleep(5000);
-                        // }
-                    })
-                    .catch(err => console.log(err));
-                break;
-            case 'issue':
-                axios.get(base_url + "/guild/" + my_guild_id)
-                    .then(response => response.data)
-                    .then(async data => {
-                        guild = data,
-                        await message.channel.send('```' + findIssues(guild.players) + '```');
-                        // bot.sendMessage({
-                        //     to: channelID,
-                        //     message: '```' + findIssues(guild.players) + '```',
-                        // });
-                    });
-                break;
-            case 'test':
-                await message.channel.send("This command is reserved for testing.");
 
-                // initGuildStore(guild_store_a);
-                // initGuildStore(guild_store_b);
                 // axios.get(base_url + "/guild/" + args[0])
                 //     .then(response => response.data)
                 //     .then(data => {
@@ -511,6 +508,23 @@ client.on('message', async message => {
                 //         // }
                 //     })
                 //     .catch(err => console.log(err));
+
+                break;
+            case 'issue':
+                axios.get(base_url + "/guild/" + my_guild_id)
+                    .then(response => response.data)
+                    .then(async data => {
+                        guild = data,
+                        await message.channel.send('```' + findIssues(guild.players) + '```');
+                        // bot.sendMessage({
+                        //     to: channelID,
+                        //     message: '```' + findIssues(guild.players) + '```',
+                        // });
+                    });
+                break;
+            case 'test':
+                await message.channel.send("This command is reserved for testing.");
+
                 break;
             default:
                 await message.channel.send("I don't understand the words that are coming out of your mouth....");
@@ -689,6 +703,21 @@ function selfEval(guild_a){
     return res;
 }
 
+// a, and b are Date() objects.
+function timeDiff(a, b, unit='second'){
+    let res;
+    switch(unit){
+        case 'day':
+            res = Math.round((b.getTime() - a.getTime())/(1000*60*60*24));
+            break;
+        default:
+            // Default is second
+            res = Math.round((b.getTime() - a.getTime())/(1000));
+    }
+    return res;
+}
+
+///////////////////////////////////////////////////////////////
 function sendFiles(channelID, fileArr, interval) {
     var resArr = [], len = fileArr.length;
     var callback = typeof(arguments[2]) === 'function' ? arguments[2] : arguments[3];
