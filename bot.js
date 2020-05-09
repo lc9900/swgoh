@@ -6,9 +6,11 @@ var Discord = require('discord.js');
 var logger = require('winston');
 var phrases = require('./phrases');
 const axios = require('axios');
+const fs = require('fs');
 const table = require('table').table;
 const base_url = "https://swgoh.gg/api";
 const my_guild_id = 8665;
+
 let embed = {
     color: '#0099ff',
     // title: "Guild vs Us",
@@ -89,6 +91,17 @@ let guild = {}, refresh_time,
     guild_store_a, guild_store_b, guild_store_self, guild_data_self;
     // guild_store_a = {toons: {}, ships: {}}, guild_store_b = {toons:{}, ships:{}}, guild_store_self = {toons:{}, ships:{}};
 
+let tb_gds_guild = {};
+// let tb_gds_guild = {
+//     // The array is sorted base on gp by each character.
+//     'Darth Revan': [
+//         "seeker",
+//         "embry",
+//         "bogus1",
+//         "bogus2",
+//     ],
+// };
+
 
 async function refreshGuild(force=false){
     let now = new Date();
@@ -97,7 +110,7 @@ async function refreshGuild(force=false){
         guild_store_self = initGuildStore();
         refresh_status = 1
         guild_data_self = await getGuildData(my_guild_id);
-        // console.log(guild_data_self);
+        // console.log(JSON.stringify(guild_data_self, null, 2));
         // console.log(guild_store_self);
         twParseGuild(guild_data_self.players, guild_store_self);
         refresh_status = 0;
