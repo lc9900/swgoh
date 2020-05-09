@@ -128,7 +128,7 @@ function tbGdsPlatoonsData(){
 function tbGdsPlatoonsPrint(phase){
     let total = 0, player, current,max, value, res = {fields: []}, rarity_req = tb.tb_gds_req[phase].rarity,
         toons_req = Object.keys(tb.tb_gds_req[phase].units).sort();
-    res.title = `Geo TB Darkside Phase${phase} Platoon Assignments`;
+    res.title = `Geo TB Darkside ${phase.toUpperCase()} Platoon Assignments`;
     res.description = `Assignments are made base on toon gp, starting from the lowest`;
 
     toons_req.forEach(toon =>{
