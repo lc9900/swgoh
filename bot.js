@@ -613,6 +613,7 @@ client.on('message', async message => {
                     tbGdsPlatoonsData();
                     tb.sortTbGdsGuild();
                     res = tbGdsPlatoonsPrint(args[0]);
+                    embed.color = "#ede613";
                     message.channel.send({embed: Object.assign(res, embed)});
                 }
                 else{
