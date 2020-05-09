@@ -607,8 +607,7 @@ client.on('message', async message => {
                         // });
                     });
                 break;
-            case 'test':
-                await message.channel.send("This command is reserved for testing.");
+            case 'gds':
                 await refreshGuild();
                 if(args[0]){
                     tbGdsPlatoonsData();
@@ -620,8 +619,9 @@ client.on('message', async message => {
                     message.channel.send("Must enter a phase -- p1, p2, p3, p4");
                 }
 
-                // objectPrint(tb.tb_gds_guild);
-
+                break;
+            case 'test':
+                await message.channel.send("This command is reserved for testing.");
 
                 break;
             default:
