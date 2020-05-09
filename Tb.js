@@ -12,11 +12,55 @@ class Tb {
         };
 
         this.tb_gds_req = {
-            p1: {units: this.getReqFromFile("p1"), star: 6},
-            p2: {units: this.getReqFromFile("p2"), star: 6},
-            p3: {units: this.getReqFromFile("p3"), star: 7},
-            p4: {units: this.getReqFromFile("p4"), star: 7},
+            p1: {units: this.getReqFromFile("p1"), rarity: 6},
+            p2: {units: this.getReqFromFile("p2"), rarity: 6},
+            p3: {units: this.getReqFromFile("p3"), rarity: 7},
+            p4: {units: this.getReqFromFile("p4"), rarity: 7},
         };
+
+        this.tb_gds_guild = {};
+        // let tb_gds_guild = {
+        //     // The array is sorted base on gp by each character.
+        //     'Darth Revan': [
+        //         ["seeker", 12345, 6],
+        //         ["landcrawler", 12346, 6],
+        //     ],
+        // };
+    }
+
+    reset(){
+        this.tb_gds_guild = {};
+    }
+
+    addUnitGdsGuild(player_name, unit_name, unit_gp, unit_rarity){
+
+        if(this.tb_gds_guild[unit_name]) this.tb_gds_guild[unit_name].push([player_name, unit_gp, unit_rarity]);
+        else {
+            this.tb_gds_guild[unit_name] = [[player_name, unit_gp, unit_rarity]];
+        }
+    }
+
+    sortTbGdsGuild(){
+        for(let toon in this.tb_gds_guild){
+            this.tb_gds_guild[toon].sort((a,b) => { return a[1] - b[1]});
+        }
+    }
+
+    // simple method to check if a toon is needed for platoon using toon's name
+    needToon(name, rarity){
+        let res = false;
+
+        // If the rarity is below p1 requirement, no point checking more
+        if(rarity < this.tb_gds_req.p1.rarity){
+            // console.log(`${name} at ${rarity} is less than required ${this.tb_gds_req.p1.rarity}`);
+            return res;
+        }
+
+        for(let p in this.tb_gds_req){
+            if(this.tb_gds_req[p].units[name]) res = true;
+        }
+
+        return  res;
     }
 
     getReqFromFile(phase){

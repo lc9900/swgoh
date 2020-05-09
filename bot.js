@@ -8,9 +8,10 @@ var phrases = require('./phrases');
 const axios = require('axios');
 const fs = require('fs');
 const table = require('table').table;
+const Tb = require('./Tb');
 const base_url = "https://swgoh.gg/api";
 const my_guild_id = 8665;
-
+const tb = new Tb();
 let embed = {
     color: '#0099ff',
     // title: "Guild vs Us",
@@ -102,12 +103,64 @@ let tb_gds_guild = {};
 //     ],
 // };
 
+function tbGdsPlatoonsData(){
+
+    // If there's data in it, then no need to redo.
+    // Resetting this data will be part of refresh.
+    if(Object.keys(tb.tb_gds_guild).length !== 0) {
+        // console.log(`tb_gds_guild: ${Object.keys(tb.tb_gds_guild)}`);
+        return;
+    }
+
+    guild_data_self.players.forEach(player => {
+        player.units.forEach(unit =>{
+            // console.log(`Processing ${unit.data.name} with rarity ${unit.data.rarity}`);
+            if(tb.needToon(unit.data.name, unit.data.rarity)){
+                // console.log(`Adding ${unit.data.name} with rarity ${unit.data.rarity}`);
+                tb.addUnitGdsGuild(player.data.name, unit.data.name, unit.data.power, unit.data.rarity);
+            }
+        });
+    });
+
+    tb.sortTbGdsGuild();
+}
+
+function tbGdsPlatoonsPrint(phase){
+    let total = 0, player, current,max, value, res = {fields: []}, rarity_req = tb.tb_gds_req[phase].rarity,
+        toons_req = Object.keys(tb.tb_gds_req[phase].units).sort();
+    res.title = `Geo TB Darkside Phase${phase} Platoon Assignments`;
+    res.description = `Assignments are made base on toon gp, starting from the lowest`;
+
+    toons_req.forEach(toon =>{
+        max = tb.tb_gds_req[phase].units[toon];
+        value = ``;
+        current = 0;
+
+        for(let i = 0; i < tb.tb_gds_guild[toon].length; i++){
+            player = tb.tb_gds_guild[toon][i];
+            // if player's rarity fits, then count it
+            if(player[2] >= rarity_req){
+                // value += `**${player[0]}**: ${player[1]}\n`;
+                value+= `${player[0]}\n`;
+                total += value.length;
+                current++;
+            }
+            if(current >= max) break;
+        }
+
+        res.fields.push({name: `==**${toon}**(${max})==`, value: value, inline: true});
+    });
+    console.log(`Total value length: ${total}`);
+    // console.log(res.fields);
+    return res;
+}
 
 async function refreshGuild(force=false){
     let now = new Date();
     // If we never refreshed, or we want to force it, or the data we have is more than 1 day old
     if(refresh_time === undefined || force === true || timeDiff(refresh_time, now, 'day') > 0){
         guild_store_self = initGuildStore();
+        tb.reset();
         refresh_status = 1
         guild_data_self = await getGuildData(my_guild_id);
         // console.log(JSON.stringify(guild_data_self, null, 2));
@@ -368,6 +421,7 @@ client.on('message', async message => {
         switch(cmd) {
             // !ping
             case 'light':
+                await refreshGuild();
                 who = args[0]? args[0]+"! ": message.author.username +"! ";
                 args = args.splice(1);
                 num = Math.floor(Math.random() * phrases.compliments.length);
@@ -378,6 +432,7 @@ client.on('message', async message => {
                 // });
                 break;
             case 'dark':
+                await refreshGuild();
                 who = args[0]? args[0]+"! ": message.author.username +"! ";
                 args = args.splice(1);
                 num = Math.floor(Math.random() * phrases.dis.length);
@@ -388,6 +443,7 @@ client.on('message', async message => {
                 // });
                 break;
             case 'quote':
+                await refreshGuild();
                 num = Math.floor(Math.random() * phrases.quotes.length);
                 await message.channel.send(phrases.quotes[num]);
                 // bot.sendMessage({
@@ -397,6 +453,7 @@ client.on('message', async message => {
                 break;
             // https://cdn.discordapp.com/attachments/353622124839043076/682413698496593966/image0.gif
             case 'ep':
+                await refreshGuild();
                 num = Math.floor(Math.random() * images.length);
                 await message.channel.send({
                     files: [{
@@ -407,6 +464,7 @@ client.on('message', async message => {
                 // sendFiles(channelID, [images[num]]);
                 break;
             case 'fight':
+                await refreshGuild();
                 who = args[0]? args[0]+"! ": message.author.username +"! ";
                 args = args.splice(1);
                 num = Math.floor(Math.random() * phrases.fight.length);
@@ -417,6 +475,7 @@ client.on('message', async message => {
                 // });
                 break;
             case 'charge':
+                await refreshGuild();
                 who = args[0]? args[0]+"! ": message.author.username +"! ";
                 args = args.splice(1);
                 num = Math.floor(Math.random() * phrases.money.length);
@@ -427,6 +486,7 @@ client.on('message', async message => {
                 // });
                 break;
             case 'thraceme':
+                await refreshGuild();
                 await message.channel.send("Congratulations Thrace, that is awesome for you!");
                 await message.channel.send("Thrace: Thanks! Pretty excited about it myself. You are awesome yourself");
                 // bot.sendMessage({
@@ -440,6 +500,7 @@ client.on('message', async message => {
                 // });
                 break;
             case 'flip':
+                await refreshGuild();
                 who = args[0]? args[0]+"! ": message.author.username +"! ";
                 args = args.splice(1);
                 await message.channel.send(who + ":middle_finger:".repeat(Math.floor(Math.random() * 20) + 5));
@@ -449,6 +510,7 @@ client.on('message', async message => {
                 // });
                 break;
             case 'snowflake':
+                await refreshGuild();
                 who = args[0]? args[0]+"! ": message.author.username +"! ";
                 args = args.splice(1);
                 await message.channel.send(who + ":snowflake:".repeat(Math.floor(Math.random() * 20) + 5));
@@ -458,6 +520,7 @@ client.on('message', async message => {
                 // });
                 break;
             case 'halo':
+                await refreshGuild();
                 who = args[0]? args[0]+"! ": message.author.username +"! ";
                 args = args.splice(1);
                 num = Math.floor(Math.random() * phrases.halo.length);
@@ -499,6 +562,7 @@ client.on('message', async message => {
                 //     });
                 break;
             case 'clear':
+                await refreshGuild();
                 await message.channel.send(clearScreen());
                 // bot.sendMessage({
                 //    to: channelID,
@@ -529,45 +593,9 @@ client.on('message', async message => {
                     console.log(err);
                 }
 
-
-                // axios.get(base_url + "/guild/" + args[0])
-                //     .then(response => response.data)
-                //     .then(data => {
-                //         let url = '';
-                //         // twParseGuild(data.players, guild_store_a);
-                //         guild_a = data;
-                //         if(args[1] === undefined){
-                //             url = base_url + "/guild/" + my_guild_id;
-                //         }
-                //         else url = base_url + "/guild/" + args[1];
-                //         return axios.get(url)
-                //             .then(response => response.data)
-                //             .then(data => {
-                //                 return guild_b = data;
-                //             })
-                //     })
-                //     .then(async () => {
-                //         let res = twCompare(guild_a, guild_b), i = 0;
-                //         // console.log(res);
-                //         // console.log(res.length);
-                //         // console.log(JSON.stringify(guild_store_b, null, 2));
-
-                //         message.channel.send({embed: Object.assign(res, embed)});
-
-                //         // for(let i = 0; i < res.length; i++){
-                //         //     // console.log(res[i].length);
-                //         //     await message.channel.send('```' + res[i] + '```');
-                //         //     // bot.sendMessage({
-                //         //     //    to: channelID,
-                //         //     //    message: '```' + res[i] + '```',
-                //         //     // });
-                //         //     sleep(5000);
-                //         // }
-                //     })
-                //     .catch(err => console.log(err));
-
                 break;
             case 'issue':
+                await refreshGuild();
                 axios.get(base_url + "/guild/" + my_guild_id)
                     .then(response => response.data)
                     .then(async data => {
@@ -581,9 +609,23 @@ client.on('message', async message => {
                 break;
             case 'test':
                 await message.channel.send("This command is reserved for testing.");
+                await refreshGuild();
+                if(args[0]){
+                    tbGdsPlatoonsData();
+                    tb.sortTbGdsGuild();
+                    res = tbGdsPlatoonsPrint(args[0]);
+                    message.channel.send({embed: Object.assign(res, embed)});
+                }
+                else{
+                    message.channel.send("Must enter a phase -- p1, p2, p3, p4");
+                }
+
+                // objectPrint(tb.tb_gds_guild);
+
 
                 break;
             default:
+                await refreshGuild();
                 await message.channel.send("I don't understand the words that are coming out of your mouth....");
                 // bot.sendMessage({
                 //    to: channelID,
@@ -707,6 +749,10 @@ function timeDiff(a, b, unit='second'){
             res = Math.round((b.getTime() - a.getTime())/(1000));
     }
     return res;
+}
+
+function objectPrint(obj){
+    console.log(JSON.stringify(obj, null, 2));
 }
 
 ///////////////////////////////////////////////////////////////
