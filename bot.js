@@ -196,7 +196,7 @@ function tbGdsPlayerPlatoonProcess(player_name, phase){
             value += `${toon}\n`;
         });
     } else {
-        value += "```No platton assignment required```";
+        value += "No platton assignment required";
     }
 
     res.fields.push({name: `==**${phase.toUpperCase()}**==`, value: "```"+value+"```", inline: true});
