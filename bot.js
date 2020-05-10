@@ -150,7 +150,7 @@ function tbGdsPlatoonsProcess(phase){
             if(current >= max) break;
         }
 
-        data.fields.push({name: `**${toon}**(${max})`, value: value, inline: true});
+        data.fields.push({name: `**${toon}**(${max})`, value: "```"+value+"```", inline: true});
 
         if(counter > limit){
             // console.log(`counter at ${counter}`);
@@ -196,10 +196,10 @@ function tbGdsPlayerPlatoonProcess(player_name, phase){
             value += `${toon}\n`;
         });
     } else {
-        value += "No platton assignment required";
+        value += "```No platton assignment required```";
     }
 
-    res.fields.push({name: `==**${phase.toUpperCase()}**==`, value: value, inline: true});
+    res.fields.push({name: `==**${phase.toUpperCase()}**==`, value: "```"+value+"```", inline: true});
     return res;
 }
 
