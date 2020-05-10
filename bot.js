@@ -658,7 +658,7 @@ client.on('message', async message => {
                 break;
             case 'gds':
                 await refreshGuild();
-                if(args[0]){
+                if(['p1','p2','p3','p4'].includes(args[0])){
                     tbGdsPlatoonsData();
                     tb.sortTbGdsGuild();
                     res = tbGdsPlatoonsProcess(args[0]);
@@ -681,11 +681,12 @@ client.on('message', async message => {
                 break;
             case '1gds':
                 await refreshGuild();
-                if(args[0] && args[1]){
+                if(['p1','p2','p3','p4'].includes(args[0]) && args[1]){
                     tbGdsPlatoonsData();
                     tb.sortTbGdsGuild();
                     tbGdsPlatoonsProcess(args[0]);
-                    res = tbGdsPlayerPlatoonProcess(args[1], args[0]);
+                    // The slice here is for names with space in them
+                    res = tbGdsPlayerPlatoonProcess(args.slice(1).join(" "), args[0]);
                     // res = tbGdsPlayerPlatoonProcess("m", args[0]);
                     embed.color = "#13eb49";
                     message.channel.send({embed: Object.assign(res, embed)});
@@ -697,7 +698,9 @@ client.on('message', async message => {
                 break;
             case 'test':
                 await message.channel.send("This command is reserved for testing.");
-                //mygds
+
+                // let name = args.slice(1).join(" ");
+                // console.log(name);
 
                 break;
             default:
