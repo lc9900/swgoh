@@ -141,7 +141,7 @@ function tbGdsPlatoonsProcess(phase){
             // if player's rarity fits, then count it
             if(player[2] >= rarity_req){
                 // value += `**${player[0]}**: ${player[1]}\n`;
-                addToPlayerGdsPlatoon(phase, player[0], toon);
+                addToPlayerGdsPlatoon(phase, player[0].toUpperCase(), toon);
                 value+= `${player[0]}\n`;
                 total += value.length;
                 counter += value.length;
@@ -686,7 +686,7 @@ client.on('message', async message => {
                     tb.sortTbGdsGuild();
                     tbGdsPlatoonsProcess(args[0]);
                     // The slice here is for names with space in them
-                    res = tbGdsPlayerPlatoonProcess(args.slice(1).join(" "), args[0]);
+                    res = tbGdsPlayerPlatoonProcess(args.slice(1).join(" ").toUpperCase(), args[0]);
                     // res = tbGdsPlayerPlatoonProcess("m", args[0]);
                     embed.color = "#13eb49";
                     message.channel.send({embed: Object.assign(res, embed)});
