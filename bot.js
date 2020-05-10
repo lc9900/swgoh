@@ -636,6 +636,7 @@ client.on('message', async message => {
                         guild_b = await getGuildData(args[1]);
                     }
                     res = twCompare(guild_a, guild_b, self);
+                    embed.color = "#e65609";
                     message.channel.send({embed: Object.assign(res, embed)});
                 }
                 catch(err){
