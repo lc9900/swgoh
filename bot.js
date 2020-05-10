@@ -92,16 +92,14 @@ let guild = {}, refresh_time,
     guild_store_a, guild_store_b, guild_store_self, guild_data_self;
     // guild_store_a = {toons: {}, ships: {}}, guild_store_b = {toons:{}, ships:{}}, guild_store_self = {toons:{}, ships:{}};
 
-let tb_gds_guild = {};
-// let tb_gds_guild = {
-//     // The array is sorted base on gp by each character.
-//     'Darth Revan': [
-//         "seeker",
-//         "embry",
-//         "bogus1",
-//         "bogus2",
-//     ],
-// };
+let tb_gds_player = {
+    // "LandCrawler": {
+    //     p1: ["toon1", "toon2"],
+    //     p2: ["toon3", "toon4"],
+    //     p3: ["toon5", "toon6"],
+    //     p4: ["toon7", "toon8"],
+    // }
+};
 
 function tbGdsPlatoonsData(){
 
@@ -125,11 +123,13 @@ function tbGdsPlatoonsData(){
     tb.sortTbGdsGuild();
 }
 
-function tbGdsPlatoonsPrint(phase){
-    let total = 0, player, current,max, value, res = {fields: []}, rarity_req = tb.tb_gds_req[phase].rarity,
+function tbGdsPlatoonsProcess(phase){
+    let limit = 800, counter = 0, total = 0, player, current,max, value, res = [], data = {fields: []},
+        rarity_req = tb.tb_gds_req[phase].rarity,
         toons_req = Object.keys(tb.tb_gds_req[phase].units).sort();
-    res.title = `Geo TB Darkside ${phase.toUpperCase()} Platoon Assignments`;
-    res.description = `Assignments are made base on toon gp, starting from the lowest`;
+    data.title = `Geo TB Darkside ${phase.toUpperCase()} Platoon Assignments`;
+    data.description = `Assignments are made base on toon gp, starting from the lowest`;
+    tb_gds_player = {};
 
     toons_req.forEach(toon =>{
         max = tb.tb_gds_req[phase].units[toon];
@@ -141,17 +141,65 @@ function tbGdsPlatoonsPrint(phase){
             // if player's rarity fits, then count it
             if(player[2] >= rarity_req){
                 // value += `**${player[0]}**: ${player[1]}\n`;
+                addToPlayerGdsPlatoon(phase, player[0], toon);
                 value+= `${player[0]}\n`;
                 total += value.length;
+                counter += value.length;
                 current++;
             }
             if(current >= max) break;
         }
 
-        res.fields.push({name: `==**${toon}**(${max})==`, value: value, inline: true});
+        data.fields.push({name: `**${toon}**(${max})`, value: value, inline: true});
+
+        if(counter > limit){
+            // console.log(`counter at ${counter}`);
+            data.len = counter;
+            res.push(data);
+            data = {fields: []};
+            data.title = `Geo TB Darkside ${phase.toUpperCase()} Platoon Assignments`;
+            data.description = `Assignments are made base on toon gp, starting from the lowest`;
+            counter = 0;
+        }
     });
-    console.log(`Total value length: ${total}`);
-    // console.log(res.fields);
+    // console.log(`Total value length: ${total}`);
+    if(counter <= limit && counter > 0) {
+        data.len = counter;
+        res.push(data);
+    }
+    return res;
+}
+
+function addToPlayerGdsPlatoon(phase, player_name, toon_name){
+    if(!tb_gds_player[player_name]) {
+        tb_gds_player[player_name] = {
+            p1: [],
+            p2: [],
+            p3: [],
+            p4: [],
+        };
+    }
+    if(tb_gds_player[player_name][phase].includes(toon_name)) return;
+    tb_gds_player[player_name][phase].push(toon_name);
+}
+
+function tbGdsPlayerPlatoonProcess(player_name, phase){
+    let value, res = {fields: []};
+
+    res.title = `${player_name}'s Geo TB Darkside ${phase.toUpperCase()} Platoon Assignments`;
+    res.description = `Please fulfill your assignments`;
+
+    value = '';
+    if(tb_gds_player[player_name]){
+        // console.log(tb_gds_player[player_name][phase]);
+        tb_gds_player[player_name][phase].forEach(toon => {
+            value += `${toon}\n`;
+        });
+    } else {
+        value += "No platton assignment required";
+    }
+
+    res.fields.push({name: `==**${phase.toUpperCase()}**==`, value: value, inline: true});
     return res;
 }
 
@@ -161,6 +209,7 @@ async function refreshGuild(force=false){
     if(refresh_time === undefined || force === true || timeDiff(refresh_time, now, 'day') > 0){
         guild_store_self = initGuildStore();
         tb.reset();
+        tb_gds_player = {};
         refresh_status = 1
         guild_data_self = await getGuildData(my_guild_id);
         // console.log(JSON.stringify(guild_data_self, null, 2));
@@ -410,7 +459,7 @@ client.on('ready', function (evt) {
 // bot.on('message', function (user, userID, channelID, message, evt) {
 client.on('message', async message => {
     // console.log("We got a message");
-    let num, who = '', guild_a, guild_b, res, self = false;
+    let i, num, who = '', guild_a, guild_b, res, self = false;
     // Our bot needs to know if it will execute a command
     // It will listen for messages that will start with `!`
     if (message.content.substring(0, 4) == '/cb ') {
@@ -612,17 +661,43 @@ client.on('message', async message => {
                 if(args[0]){
                     tbGdsPlatoonsData();
                     tb.sortTbGdsGuild();
-                    res = tbGdsPlatoonsPrint(args[0]);
+                    res = tbGdsPlatoonsProcess(args[0]);
+                    // console.log(res.length);
                     embed.color = "#ede613";
-                    message.channel.send({embed: Object.assign(res, embed)});
+
+                    // message.channel.send({embed: Object.assign(res[3], embed)});
+
+                    for(i = 0; i < res.length; i++){
+                        // console.log(res[i].len);
+                        // if(i == res.length - 1) console.log(res[i].fields);
+                        await message.channel.send({embed: Object.assign(res[i], embed)});
+                        sleep(800);
+                    }
                 }
                 else{
                     message.channel.send("Must enter a phase -- p1, p2, p3, p4");
                 }
 
                 break;
+            case '1gds':
+                await refreshGuild();
+                if(args[0] && args[1]){
+                    tbGdsPlatoonsData();
+                    tb.sortTbGdsGuild();
+                    tbGdsPlatoonsProcess(args[0]);
+                    res = tbGdsPlayerPlatoonProcess(args[1], args[0]);
+                    // res = tbGdsPlayerPlatoonProcess("m", args[0]);
+                    embed.color = "#13eb49";
+                    message.channel.send({embed: Object.assign(res, embed)});
+                }
+                else{
+                    message.channel.send("Must enter a phase -- p1, p2, p3, p4 and player's name");
+                }
+
+                break;
             case 'test':
                 await message.channel.send("This command is reserved for testing.");
+                //mygds
 
                 break;
             default:
