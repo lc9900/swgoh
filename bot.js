@@ -147,7 +147,7 @@ function tbGdsPlatoonsProcess(phase){
                 counter += value.length;
                 current++;
             }
-            if(current >= max) break;
+            if(current > max) break; // Checking if we already have the amount of toons needed.
         }
 
         data.fields.push({name: `**${toon}**(${max})`, value: "```"+value+"```", inline: true});
