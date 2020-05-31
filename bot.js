@@ -133,8 +133,11 @@ function tbGdsPlatoonsProcess(phase){
 
     toons_req.forEach(toon =>{
         max = tb.tb_gds_req[phase].units[toon];
-        value = ``;
+        value = '\n';
         current = 0;
+
+        // debug
+        // console.log(`${toon}'s max: ${max}`);
 
         for(let i = 0; i < tb.tb_gds_guild[toon].length; i++){
             player = tb.tb_gds_guild[toon][i];
@@ -147,8 +150,18 @@ function tbGdsPlatoonsProcess(phase){
                 counter += value.length;
                 current++;
             }
-            if(current > max) break; // Checking if we already have the amount of toons needed.
+
+            //debug
+            // console.log(`current: ${current}, value: ${value}`);
+
+            if(current >= max) break; // Checking if we already have the amount of toons needed.
+
+
         }
+
+        //debug
+        // console.log(`Value before push: ${value}`);
+        // console.log((`Object sent: ${JSON.stringify({name: `**${toon}**(${max})`, value: "```"+value+"```", inline: true})}`));
 
         data.fields.push({name: `**${toon}**(${max})`, value: "```"+value+"```", inline: true});
 
