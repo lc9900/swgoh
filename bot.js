@@ -202,7 +202,7 @@ function tbGdsPlayerPlatoonProcess(player_name, phase){
     res.title = `${player_name}'s Geo TB Darkside ${phase.toUpperCase()} Platoon Assignments`;
     res.description = `Please fulfill your assignments`;
 
-    value = '';
+    value = '\n';
     if(tb_gds_player[player_name]){
         // console.log(tb_gds_player[player_name][phase]);
         tb_gds_player[player_name][phase].forEach(toon => {
