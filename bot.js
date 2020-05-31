@@ -197,22 +197,32 @@ function addToPlayerGdsPlatoon(phase, player_name, toon_name){
 }
 
 function tbGdsPlayerPlatoonProcess(player_name, phase){
-    let value, res = {fields: []};
+    let value = '\n', res = {fields: []}, re = new RegExp(player_name, 'i'),
+    matched_names = Object.keys(tb_gds_player).filter(name => re.test(name));
 
-    res.title = `${player_name}'s Geo TB Darkside ${phase.toUpperCase()} Platoon Assignments`;
+    res.title = `${phase.toUpperCase()} Geo TB Darkside Platoon Assignments for the following player(s)`;
     res.description = `Please fulfill your assignments`;
 
-    value = '\n';
-    if(tb_gds_player[player_name]){
-        // console.log(tb_gds_player[player_name][phase]);
-        tb_gds_player[player_name][phase].forEach(toon => {
-            value += `${toon}\n`;
+    if(matched_names.length == 0) res.fields.push({name: "WARNING!!!", value: "\nEither no matching player found or player has no assignments", inline: true});
+    else {
+        matched_names.forEach(player_name => {
+            value = '\n';
+            if(tb_gds_player[player_name][phase].length > 0) tb_gds_player[player_name][phase].forEach(toon => value += `${toon}\n`);
+            else value += "No platoon assignment required";
+            res.fields.push({name: `==**${player_name}**==`, value: "```"+value+"```", inline: true});
         });
-    } else {
-        value += "No platton assignment required";
     }
+    // value = '\n';
+    // if(tb_gds_player[player_name]){
+    //     // console.log(tb_gds_player[player_name][phase]);
+    //     tb_gds_player[player_name][phase].forEach(toon => {
+    //         value += `${toon}\n`;
+    //     });
+    // } else {
+    //     value += "No platton assignment required";
+    // }
 
-    res.fields.push({name: `==**${phase.toUpperCase()}**==`, value: "```"+value+"```", inline: true});
+    // res.fields.push({name: `==**${phase.toUpperCase()}**==`, value: "```"+value+"```", inline: true});
     return res;
 }
 
