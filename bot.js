@@ -221,8 +221,8 @@ function tbGdsPlayerPlatoonProcess(player_name, phase){
         matched_names.forEach(player_name => {
             value = '\n';
             if(tb_gds_player[player_name][phase].length > 0) tb_gds_player[player_name][phase].forEach(toon => value += `${toon}\n`);
-            else value += "\nYou are off the hook";
-            res.fields.push({name: `No platoon assignment required`, value: "```"+value+"```", inline: true});
+            else value += "\nNo platoon assignment required";
+            res.fields.push({name: `==**${player_name}**==`, value: "```"+value+"```", inline: true});
         });
     }
     // value = '\n';
