@@ -101,6 +101,14 @@ let tb_gds_player = {
     // }
 };
 
+// If the name can be matched to any guild member, then return true, else return false
+function verifyPlayerName(player_name){
+    let re = new RegExp(player_name, 'i'),
+        matched_names = guild_data_self.players.filter(player => re.test(player.data.name));
+    if(matched_names.length > 0) return true;
+    else return false;
+}
+
 function tbGdsPlatoonsData(){
 
     // If there's data in it, then no need to redo.
@@ -203,13 +211,18 @@ function tbGdsPlayerPlatoonProcess(player_name, phase){
     res.title = `${phase.toUpperCase()} Geo TB Darkside Platoon Assignments for the following player(s)`;
     res.description = `Please fulfill your assignments`;
 
-    if(matched_names.length == 0) res.fields.push({name: "WARNING!!!", value: "\nEither no matching player found or player has no assignments", inline: true});
+    if(matched_names.length == 0){
+        if(verifyPlayerName(player_name)) res.fields.push({name: `==**No platoon assignment required**==`, value: "\nYou are off the hook", inline: true});
+        else res.fields.push({name: `WARNING! No player found matching ${player_name}`, value: "\nSigh........-.-'", inline: true});
+    }
+
+    // if(matched_names.length == 0) res.fields.push({name: "WARNING!!!", value: "\nEither no matching player found or player has no assignments", inline: true});
     else {
         matched_names.forEach(player_name => {
             value = '\n';
             if(tb_gds_player[player_name][phase].length > 0) tb_gds_player[player_name][phase].forEach(toon => value += `${toon}\n`);
-            else value += "No platoon assignment required";
-            res.fields.push({name: `==**${player_name}**==`, value: "```"+value+"```", inline: true});
+            else value += "\nYou are off the hook";
+            res.fields.push({name: `No platoon assignment required`, value: "```"+value+"```", inline: true});
         });
     }
     // value = '\n';
