@@ -77,17 +77,7 @@ var dis = [
     "As an outsider, what do you think of the human race?",
     "Just because you have one, doesn't mean you have to act like one",
     "Are you always this stupid or is today a special occasion?",
-    "This. Is. COVENANT!",
     "Your mom's so fat, Thanos had to snap twice",
-    "I find your lack of faith disturbing",
-    "I'm surprised you had the courage to take the responsibility yourself",
-    "Don't underestimate the Force",
-    "Oh no, my young Jedi. You will find that it is you who are mistaken, about a great many things",
-    "Mind tricks donít work on me",
-    "I am altering the deal, pray I do not alter it further",
-    "Be careful not to choke on your aspirations",
-    "To defeat an enemy, you must know them. Not simply their battle tactics, but their history, philosophy, art",
-
 ];
 
 var money = [

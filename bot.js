@@ -39,7 +39,7 @@ if(!BOT_TOKEN){
 }
 
 
-let guild = {}, refresh_time,
+let guild = {}, refresh_time, cb_rude = 'off',
     refresh_status = 0, // 0 - not refreshing data right now, 1 - guild data is being refreshed
     table_config = {
         columns:{
@@ -213,7 +213,7 @@ function tbGdsPlayerPlatoonProcess(player_name, phase){
 
     if(matched_names.length == 0){
         if(verifyPlayerName(player_name)) res.fields.push({name: `==**No platoon assignment required**==`, value: "\nYou are off the hook", inline: true});
-        else res.fields.push({name: `WARNING! No player found matching ${player_name}`, value: "\nSigh........-.-'", inline: true});
+        else res.fields.push({name: `WARNING! No player found matching ${player_name}`, value: "\n" + dis(cb_rude), inline: true});
     }
 
     // if(matched_names.length == 0) res.fields.push({name: "WARNING!!!", value: "\nEither no matching player found or player has no assignments", inline: true});
@@ -476,6 +476,24 @@ function initGuildStore(){
     return guild_store;
 }
 
+function dis(cb_rude){
+    let num = Math.floor(Math.random() * phrases.dis.length);
+    if(cb_rude === 'on') return phrases.dis[num];
+    else return "Sigh........-.-'";
+}
+
+function rude(flag){
+    if(flag === undefined) return cb_rude;
+    else if(flag === 'on') {
+        cb_rude = 'on';
+        return "Oh, it's on baby!";
+    }
+    else {
+        cb_rude = 'off';
+        return "If it ain't on, it's off to me.";
+    }
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Configure logger settings
 logger.remove(logger.transports.Console);
@@ -732,6 +750,9 @@ client.on('message', async message => {
                     message.channel.send("Must enter a phase -- p1, p2, p3, p4 and player's name");
                 }
 
+                break;
+            case "rude":
+                message.channel.send(rude(args[0]));
                 break;
             case 'test':
                 await message.channel.send("This command is reserved for testing.");
