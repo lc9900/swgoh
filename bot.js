@@ -517,9 +517,9 @@ client.on('message', async message => {
     // Our bot needs to know if it will execute a command
     // It will listen for messages that will start with `!`
     if (message.content.substring(0, 4) == '/cb ') {
-        var args = message.content.substring(4).split(' ');
+        var args = message.content.substring(4).split(' ').filter(el => el.length > 0); // filtering out empty elements due to extra spaces in typo
         var cmd = args[0];
-
+        // console.log(args);
         args = args.splice(1);
         switch(cmd) {
             // !ping
