@@ -2,16 +2,18 @@
 // https://discord.js.org/
 // embed messages has a total max of 60000 characters limit
 
-var Discord = require('discord.js');
-var logger = require('winston');
-var phrases = require('./phrases');
+let Discord = require('discord.js');
+let logger = require('winston');
+let phrases = require('./phrases');
 const axios = require('axios');
 const fs = require('fs');
 const table = require('table').table;
 const Tb = require('./Tb');
 const base_url = "https://swgoh.gg/api";
 const my_guild_id = 8665;
-const tb = new Tb();
+const tb_gds = new Tb('gds');
+const tb_gls = new Tb('gls');
+const tb_hls = new Tb('hls');
 let embed = {
     color: '#0099ff',
     // title: "Guild vs Us",
@@ -92,14 +94,14 @@ let guild = {}, refresh_time, cb_rude = 'off',
     guild_store_a, guild_store_b, guild_store_self, guild_data_self;
     // guild_store_a = {toons: {}, ships: {}}, guild_store_b = {toons:{}, ships:{}}, guild_store_self = {toons:{}, ships:{}};
 
-let tb_gds_player = {
-    // "LandCrawler": {
-    //     p1: ["toon1", "toon2"],
-    //     p2: ["toon3", "toon4"],
-    //     p3: ["toon5", "toon6"],
-    //     p4: ["toon7", "toon8"],
-    // }
-};
+// let tb.tb_players = {
+//     // "LandCrawler": {
+//     //     p1: ["toon1", "toon2"],
+//     //     p2: ["toon3", "toon4"],
+//     //     p3: ["toon5", "toon6"],
+//     //     p4: ["toon7", "toon8"],
+//     // }
+// };
 
 // If the name can be matched to any guild member, then return true, else return false
 function verifyPlayerName(player_name){
@@ -109,12 +111,12 @@ function verifyPlayerName(player_name){
     else return false;
 }
 
-function tbGdsPlatoonsData(){
+function tbPlatoonsData(tb){
 
     // If there's data in it, then no need to redo.
     // Resetting this data will be part of refresh.
-    if(Object.keys(tb.tb_gds_guild).length !== 0) {
-        // console.log(`tb_gds_guild: ${Object.keys(tb.tb_gds_guild)}`);
+    if(Object.keys(tb.tb_guild).length !== 0) {
+        // console.log(`tb_guild: ${Object.keys(tb.tb_guild)}`);
         return;
     }
 
@@ -123,36 +125,36 @@ function tbGdsPlatoonsData(){
             // console.log(`Processing ${unit.data.name} with rarity ${unit.data.rarity}`);
             if(tb.needToon(unit.data.name, unit.data.rarity)){
                 // console.log(`Adding ${unit.data.name} with rarity ${unit.data.rarity}`);
-                tb.addUnitGdsGuild(player.data.name, unit.data.name, unit.data.power, unit.data.rarity);
+                tb.addUnitGuild(player.data.name, unit.data.name, unit.data.power, unit.data.rarity);
             }
         });
     });
 
-    tb.sortTbGdsGuild();
+    tb.sortTbGuild();
 }
 
-function tbGdsPlatoonsProcess(phase){
+function tbPlatoonsProcess(tb, phase){
     let limit = 800, counter = 0, total = 0, player, current,max, value, res = [], data = {fields: []},
-        rarity_req = tb.tb_gds_req[phase].rarity,
-        toons_req = Object.keys(tb.tb_gds_req[phase].units).sort();
-    data.title = `Geo TB Darkside ${phase.toUpperCase()} Platoon Assignments`;
+        rarity_req = tb.tb_req[phase].rarity,
+        toons_req = Object.keys(tb.tb_req[phase].units).sort();
+    data.title = `${tb.title} ${phase.toUpperCase()} Platoon Assignments`;
     data.description = `Assignments are made base on toon gp, starting from the lowest`;
-    tb_gds_player = {};
+    tb.tb_players = {};
 
     toons_req.forEach(toon =>{
-        max = tb.tb_gds_req[phase].units[toon];
+        max = tb.tb_req[phase].units[toon];
         value = '\n';
         current = 0;
 
         // debug
         // console.log(`${toon}'s max: ${max}`);
 
-        for(let i = 0; i < tb.tb_gds_guild[toon].length; i++){
-            player = tb.tb_gds_guild[toon][i];
+        for(let i = 0; i < tb.tb_guild[toon].length; i++){
+            player = tb.tb_guild[toon][i];
             // if player's rarity fits, then count it
             if(player[2] >= rarity_req){
                 // value += `**${player[0]}**: ${player[1]}\n`;
-                addToPlayerGdsPlatoon(phase, player[0].toUpperCase(), toon);
+                addToPlayerPlatoon(phase, player[0].toUpperCase(), toon);
                 value+= `${player[0]}\n`;
                 total += value.length;
                 counter += value.length;
@@ -178,7 +180,7 @@ function tbGdsPlatoonsProcess(phase){
             data.len = counter;
             res.push(data);
             data = {fields: []};
-            data.title = `Geo TB Darkside ${phase.toUpperCase()} Platoon Assignments`;
+            data.title = `${tb.title} ${phase.toUpperCase()} Platoon Assignments`;
             data.description = `Assignments are made base on toon gp, starting from the lowest`;
             counter = 0;
         }
@@ -191,24 +193,24 @@ function tbGdsPlatoonsProcess(phase){
     return res;
 }
 
-function addToPlayerGdsPlatoon(phase, player_name, toon_name){
-    if(!tb_gds_player[player_name]) {
-        tb_gds_player[player_name] = {
+function addToPlayerPlatoon(tb, phase, player_name, toon_name){
+    if(!tb.tb_players[player_name]) {
+        tb.tb_players[player_name] = {
             p1: [],
             p2: [],
             p3: [],
             p4: [],
         };
     }
-    if(tb_gds_player[player_name][phase].includes(toon_name)) return;
-    tb_gds_player[player_name][phase].push(toon_name);
+    if(tb.tb_players[player_name][phase].includes(toon_name)) return;
+    tb.tb_players[player_name][phase].push(toon_name);
 }
 
-function tbGdsPlayerPlatoonProcess(player_name, phase){
+function tbPlayerPlatoonProcess(tb, player_name, phase){
     let value = '\n', res = {fields: []}, re = new RegExp(player_name, 'i'),
-    matched_names = Object.keys(tb_gds_player).filter(name => re.test(name));
+    matched_names = Object.keys(tb.tb_players).filter(name => re.test(name));
 
-    res.title = `${phase.toUpperCase()} Geo TB Darkside Platoon Assignments for the following player(s)`;
+    res.title = `${phase.toUpperCase()} ${tb.title} Platoon Assignments for the following player(s)`;
     res.description = `Please fulfill your assignments`;
 
     if(matched_names.length == 0){
@@ -220,15 +222,15 @@ function tbGdsPlayerPlatoonProcess(player_name, phase){
     else {
         matched_names.forEach(player_name => {
             value = '\n';
-            if(tb_gds_player[player_name][phase].length > 0) tb_gds_player[player_name][phase].forEach(toon => value += `${toon}\n`);
+            if(tb.tb_players[player_name][phase].length > 0) tb.tb_players[player_name][phase].forEach(toon => value += `${toon}\n`);
             else value += "\nNo platoon assignment required";
             res.fields.push({name: `==**${player_name}**==`, value: "```"+value+"```", inline: true});
         });
     }
     // value = '\n';
-    // if(tb_gds_player[player_name]){
-    //     // console.log(tb_gds_player[player_name][phase]);
-    //     tb_gds_player[player_name][phase].forEach(toon => {
+    // if(tb.tb_players[player_name]){
+    //     // console.log(tb.tb_players[player_name][phase]);
+    //     tb.tb_players[player_name][phase].forEach(toon => {
     //         value += `${toon}\n`;
     //     });
     // } else {
@@ -244,8 +246,9 @@ async function refreshGuild(force=false){
     // If we never refreshed, or we want to force it, or the data we have is more than 1 day old
     if(refresh_time === undefined || force === true || timeDiff(refresh_time, now, 'day') > 0){
         guild_store_self = initGuildStore();
-        tb.reset();
-        tb_gds_player = {};
+        tb_gds.reset();
+        tb_gls.reset();
+        tb_hls.reset();
         refresh_status = 1
         guild_data_self = await getGuildData(my_guild_id);
         // console.log(JSON.stringify(guild_data_self, null, 2));
@@ -713,10 +716,11 @@ client.on('message', async message => {
                 break;
             case 'gds':
                 await refreshGuild();
+                // tb.setType('gds');
                 if(['p1','p2','p3','p4'].includes(args[0])){
-                    tbGdsPlatoonsData();
-                    tb.sortTbGdsGuild();
-                    res = tbGdsPlatoonsProcess(args[0]);
+                    tbPlatoonsData(tb_gds);
+                    tb_gds.sortTbGuild();
+                    res = tbPlatoonsProcess(tb_gds,args[0]);
                     // console.log(res.length);
                     embed.color = "#ede613";
 
@@ -736,13 +740,56 @@ client.on('message', async message => {
                 break;
             case '1gds':
                 await refreshGuild();
+                // tb.setType('gds');
                 if(['p1','p2','p3','p4'].includes(args[0]) && args[1]){
-                    tbGdsPlatoonsData();
-                    tb.sortTbGdsGuild();
-                    tbGdsPlatoonsProcess(args[0]);
+                    tbPlatoonsData(tb_gds);
+                    tb_gds.sortTbGuild();
+                    tbPlatoonsProcess(tb_gds,args[0]);
                     // The slice here is for names with space in them
-                    res = tbGdsPlayerPlatoonProcess(args.slice(1).join(" ").toUpperCase(), args[0]);
-                    // res = tbGdsPlayerPlatoonProcess("m", args[0]);
+                    res = tbPlayerPlatoonProcess(tb_gds,args.slice(1).join(" ").toUpperCase(), args[0]);
+                    // res = tbPlayerPlatoonProcess("m", args[0]);
+                    embed.color = "#13eb49";
+                    message.channel.send({embed: Object.assign(res, embed)});
+                }
+                else{
+                    message.channel.send("Must enter a phase -- p1, p2, p3, p4 and player's name");
+                }
+
+                break;
+            case 'hls':
+                await refreshGuild();
+                // tb.setType('hls');
+                if(['p1','p2','p3','p4'].includes(args[0])){
+                    tbPlatoonsData(tb_hls);
+                    tb_hls.sortTbGuild();
+                    res = tbPlatoonsProcess(tb_hls,args[0]);
+                    // console.log(res.length);
+                    embed.color = "#ede613";
+
+                    // message.channel.send({embed: Object.assign(res[3], embed)});
+
+                    for(i = 0; i < res.length; i++){
+                        // console.log(res[i].len);
+                        // if(i == res.length - 1) console.log(res[i].fields);
+                        await message.channel.send({embed: Object.assign(res[i], embed)});
+                        sleep(800);
+                    }
+                }
+                else{
+                    message.channel.send("Must enter a phase -- p1, p2, p3, p4");
+                }
+
+                break;
+            case '1hls':
+                await refreshGuild();
+                // tb.setType('hls');
+                if(['p1','p2','p3','p4'].includes(args[0]) && args[1]){
+                    tbPlatoonsData(tb_hls);
+                    tb_hls.sortTbGuild();
+                    tbPlatoonsProcess(tb_hls,args[0]);
+                    // The slice here is for names with space in them
+                    res = tbPlayerPlatoonProcess(tb_hls,args.slice(1).join(" ").toUpperCase(), args[0]);
+                    // res = tbPlayerPlatoonProcess("m", args[0]);
                     embed.color = "#13eb49";
                     message.channel.send({embed: Object.assign(res, embed)});
                 }
