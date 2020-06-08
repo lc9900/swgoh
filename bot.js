@@ -14,6 +14,9 @@ const my_guild_id = 8665;
 const tb_gds = new Tb('gds');
 const tb_gls = new Tb('gls');
 const tb_hls = new Tb('hls');
+
+// tb_gds.printTbMeta();
+
 let embed = {
     color: '#0099ff',
     // title: "Guild vs Us",
@@ -113,6 +116,7 @@ function verifyPlayerName(player_name){
 
 function tbPlatoonsData(tb){
 
+    // tb.printTbMeta();
     // If there's data in it, then no need to redo.
     // Resetting this data will be part of refresh.
     if(Object.keys(tb.tb_guild).length !== 0) {
@@ -122,9 +126,12 @@ function tbPlatoonsData(tb){
 
     guild_data_self.players.forEach(player => {
         player.units.forEach(unit =>{
+            // if(unit.data.name == 'CC-2224 Cody') console.log(`Player has ${unit.data.name} with rarity ${unit.data.rarity}`);
             // console.log(`Processing ${unit.data.name} with rarity ${unit.data.rarity}`);
             if(tb.needToon(unit.data.name, unit.data.rarity)){
                 // console.log(`Adding ${unit.data.name} with rarity ${unit.data.rarity}`);
+                // if(unit.data.name == 'CC-2224 Cody') console.log(`Adding ${unit.data.name} with rarity ${unit.data.rarity}`);
+
                 tb.addUnitGuild(player.data.name, unit.data.name, unit.data.power, unit.data.rarity);
             }
         });
@@ -148,13 +155,20 @@ function tbPlatoonsProcess(tb, phase){
 
         // debug
         // console.log(`${toon}'s max: ${max}`);
+        // console.log(`toon: ${toon}`);
+        // if(toon == 'CC-2224 Cody') console.log(JSON.stringify(tb.tb_guild, null, 2));
+
+        // if(tb.tb_guild[toon] === undefined){
+        //     console.log(`toon: ${toon}`);
+        //     return;
+        // }
 
         for(let i = 0; i < tb.tb_guild[toon].length; i++){
             player = tb.tb_guild[toon][i];
             // if player's rarity fits, then count it
             if(player[2] >= rarity_req){
                 // value += `**${player[0]}**: ${player[1]}\n`;
-                addToPlayerPlatoon(phase, player[0].toUpperCase(), toon);
+                addToPlayerPlatoon(tb, phase, player[0].toUpperCase(), toon);
                 value+= `${player[0]}\n`;
                 total += value.length;
                 counter += value.length;
@@ -194,12 +208,15 @@ function tbPlatoonsProcess(tb, phase){
 }
 
 function addToPlayerPlatoon(tb, phase, player_name, toon_name){
-    if(!tb.tb_players[player_name]) {
+    // tb.printTbMeta();
+    if(tb.tb_players[player_name] === undefined) {
         tb.tb_players[player_name] = {
             p1: [],
             p2: [],
             p3: [],
             p4: [],
+            p5: [],
+            p6: [],
         };
     }
     if(tb.tb_players[player_name][phase].includes(toon_name)) return;
@@ -717,7 +734,10 @@ client.on('message', async message => {
             case 'gds':
                 await refreshGuild();
                 // tb.setType('gds');
-                if(['p1','p2','p3','p4'].includes(args[0])){
+                if(tb_gds.phases.includes(args[0])){
+
+                    // tb_gds.printTbMeta();
+
                     tbPlatoonsData(tb_gds);
                     tb_gds.sortTbGuild();
                     res = tbPlatoonsProcess(tb_gds,args[0]);
@@ -741,7 +761,10 @@ client.on('message', async message => {
             case '1gds':
                 await refreshGuild();
                 // tb.setType('gds');
-                if(['p1','p2','p3','p4'].includes(args[0]) && args[1]){
+                if(tb_gds.phases.includes(args[0]) && args[1]){
+
+                    // tb_gds.printTbMeta();
+
                     tbPlatoonsData(tb_gds);
                     tb_gds.sortTbGuild();
                     tbPlatoonsProcess(tb_gds,args[0]);
@@ -759,7 +782,7 @@ client.on('message', async message => {
             case 'hls':
                 await refreshGuild();
                 // tb.setType('hls');
-                if(['p1','p2','p3','p4'].includes(args[0])){
+                if(tb_hls.phases.includes(args[0])){
                     tbPlatoonsData(tb_hls);
                     tb_hls.sortTbGuild();
                     res = tbPlatoonsProcess(tb_hls,args[0]);
@@ -783,7 +806,7 @@ client.on('message', async message => {
             case '1hls':
                 await refreshGuild();
                 // tb.setType('hls');
-                if(['p1','p2','p3','p4'].includes(args[0]) && args[1]){
+                if(tb_hls.phases.includes(args[0]) && args[1]){
                     tbPlatoonsData(tb_hls);
                     tb_hls.sortTbGuild();
                     tbPlatoonsProcess(tb_hls,args[0]);
