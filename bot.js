@@ -761,18 +761,26 @@ client.on('message', async message => {
             case '1gds':
                 await refreshGuild();
                 // tb.setType('gds');
-                if(tb_gds.phases.includes(args[0]) && args[1]){
+                if((tb_gds.phases.includes(args[0]) || args[0] === 'all') && args[1]){
 
                     // tb_gds.printTbMeta();
+                    let phase_list = args[0] === 'all' ? tb_gds.phases:[args[0]];
+                    // console.log(phase_list);
 
                     tbPlatoonsData(tb_gds);
                     tb_gds.sortTbGuild();
-                    tbPlatoonsProcess(tb_gds,args[0]);
-                    // The slice here is for names with space in them
-                    res = tbPlayerPlatoonProcess(tb_gds,args.slice(1).join(" ").toUpperCase(), args[0]);
-                    // res = tbPlayerPlatoonProcess("m", args[0]);
-                    embed.color = "#13eb49";
-                    message.channel.send({embed: Object.assign(res, embed)});
+
+                    for(let i = 0; i < phase_list.length; i++){
+                        tbPlatoonsProcess(tb_gds,phase_list[i]);
+                        // The slice here is for names with space in them
+                        res = tbPlayerPlatoonProcess(tb_gds,args.slice(1).join(" ").toUpperCase(), phase_list[i]);
+                        // res = tbPlayerPlatoonProcess("m", args[0]);
+                        embed.color = "#13eb49";
+                        await message.channel.send({embed: Object.assign(res, embed)});
+                        sleep(800);
+                    }
+
+
                 }
                 else{
                     message.channel.send("Must enter a phase -- p1, p2, p3, p4 and player's name");
@@ -806,15 +814,21 @@ client.on('message', async message => {
             case '1hls':
                 await refreshGuild();
                 // tb.setType('hls');
-                if(tb_hls.phases.includes(args[0]) && args[1]){
+                if((tb_hls.phases.includes(args[0]) || args[0] === 'all') && args[1]){
+                    let phase_list = args[0] === 'all' ? tb_hls.phases:[args[0]];
                     tbPlatoonsData(tb_hls);
                     tb_hls.sortTbGuild();
-                    tbPlatoonsProcess(tb_hls,args[0]);
-                    // The slice here is for names with space in them
-                    res = tbPlayerPlatoonProcess(tb_hls,args.slice(1).join(" ").toUpperCase(), args[0]);
-                    // res = tbPlayerPlatoonProcess("m", args[0]);
-                    embed.color = "#13eb49";
-                    message.channel.send({embed: Object.assign(res, embed)});
+
+                    for(let i = 0; i < phase_list.length; i++){
+                        tbPlatoonsProcess(tb_hls,phase_list[i]);
+                        // The slice here is for names with space in them
+                        res = tbPlayerPlatoonProcess(tb_hls,args.slice(1).join(" ").toUpperCase(), phase_list[i]);
+                        // res = tbPlayerPlatoonProcess("m", args[0]);
+                        embed.color = "#13eb49";
+                        await message.channel.send({embed: Object.assign(res, embed)});
+                        sleep(800);
+                    }
+
                 }
                 else{
                     message.channel.send("Must enter a phase -- p1, p2, p3, p4 and player's name");
