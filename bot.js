@@ -58,6 +58,7 @@ let guild = {}, refresh_time, cb_rude = 'off',
         "dance_wiener.gif",
         "r2piss.gif",
         "grabmyass.gif",
+        "bear.gif",
     ],
     tracked_toons = [
         'Supreme Leader Kylo Ren',
