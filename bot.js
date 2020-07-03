@@ -141,15 +141,22 @@ function tbPlatoonsData(tb){
     tb.sortTbGuild();
 }
 
-function tbPlatoonsProcess(tb, phase){
+function tbPlatoonsProcess(tb, phase, toon_name=".*"){
     let limit = 800, counter = 0, total = 0, player, current,max, value, res = [], data = {fields: []},
-        rarity_req = tb.tb_req[phase].rarity,
+        rarity_req = tb.tb_req[phase].rarity, re = new RegExp(toon_name, 'i'), toons_req_filtered = [],
         toons_req = Object.keys(tb.tb_req[phase].units).sort();
     data.title = `${tb.title} ${phase.toUpperCase()} Platoon Assignments`;
     data.description = `Assignments are made base on toon gp, starting from the lowest`;
     tb.tb_players = {};
 
-    toons_req.forEach(toon =>{
+    // If the toon name is not matched, then skip. Default matches everything
+    toons_req_filtered = toons_req.filter(toon => re.test(toon));
+    if(toons_req_filtered.length == 0){
+        data.fields.push({name: `WARNING! No toon found matching ${toon_name}`, value: "Did you put in the right name?", inline: true});
+        res.push(data);
+    }
+
+    toons_req_filtered.forEach(toon =>{
         max = tb.tb_req[phase].units[toon];
         value = '\n';
         current = 0;
@@ -741,7 +748,7 @@ client.on('message', async message => {
 
                     tbPlatoonsData(tb_gds);
                     tb_gds.sortTbGuild();
-                    res = tbPlatoonsProcess(tb_gds,args[0]);
+                    res = tbPlatoonsProcess(tb_gds,args[0], args.slice(1).join(" "));
                     // console.log(res.length);
                     embed.color = "#ede613";
 
@@ -794,7 +801,7 @@ client.on('message', async message => {
                 if(tb_hls.phases.includes(args[0])){
                     tbPlatoonsData(tb_hls);
                     tb_hls.sortTbGuild();
-                    res = tbPlatoonsProcess(tb_hls,args[0]);
+                    res = tbPlatoonsProcess(tb_hls,args[0], args.slice(1).join(" "));
                     // console.log(res.length);
                     embed.color = "#ede613";
 
@@ -841,9 +848,6 @@ client.on('message', async message => {
                 break;
             case 'test':
                 await message.channel.send("This command is reserved for testing.");
-
-                // let name = args.slice(1).join(" ");
-                // console.log(name);
 
                 break;
             default:
