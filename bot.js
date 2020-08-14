@@ -171,7 +171,9 @@ function tbPlatoonsProcess(tb, phase, toon_name=".*"){
         //     return;
         // }
 
+        // console.log(`toon is: ${toon}` );
         for(let i = 0; i < tb.tb_guild[toon].length; i++){
+
             player = tb.tb_guild[toon][i];
             // if player's rarity fits, then count it
             if(player[2] >= rarity_req){
@@ -849,7 +851,7 @@ client.on('message', async message => {
                 if(tb_gls.phases.includes(args[0])){
                     tbPlatoonsData(tb_gls);
                     tb_gls.sortTbGuild();
-                    res = tbPlatoonsProcess(tb_hls,args[0], args.slice(1).join(" "));
+                    res = tbPlatoonsProcess(tb_gls,args[0], args.slice(1).join(" "));
                     // console.log(res.length);
                     embed.color = "#ede613";
 
@@ -873,6 +875,8 @@ client.on('message', async message => {
                 if((tb_gls.phases.includes(args[0]) || args[0] === 'all') && args[1]){
                     let phase_list = args[0] === 'all' ? tb_gls.phases:[args[0]];
                     tbPlatoonsData(tb_gls);
+                    // console.log(JSON.stringify(tb_gls.tb_guild, 0, 2));
+
                     tb_gls.sortTbGuild();
 
                     for(let i = 0; i < phase_list.length; i++){
