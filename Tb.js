@@ -92,8 +92,8 @@ class Tb {
                 };
 
                 this.tb_req = {
-                    p1: {units: this.getReqFromFile("p1"), rarity: 6},
-                    p2: {units: this.getReqFromFile("p2"), rarity: 6},
+                    p1: {units: this.getReqFromFile("p1"), rarity: 7},
+                    p2: {units: this.getReqFromFile("p2"), rarity: 7},
                     p3: {units: this.getReqFromFile("p3"), rarity: 7},
                     p4: {units: this.getReqFromFile("p4"), rarity: 7},
                 };
