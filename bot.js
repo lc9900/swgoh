@@ -843,6 +843,54 @@ client.on('message', async message => {
                 }
 
                 break;
+            case 'gls':
+                await refreshGuild();
+                // tb.setType('hls');
+                if(tb_gls.phases.includes(args[0])){
+                    tbPlatoonsData(tb_gls);
+                    tb_gls.sortTbGuild();
+                    res = tbPlatoonsProcess(tb_hls,args[0], args.slice(1).join(" "));
+                    // console.log(res.length);
+                    embed.color = "#ede613";
+
+                    // message.channel.send({embed: Object.assign(res[3], embed)});
+
+                    for(i = 0; i < res.length; i++){
+                        // console.log(res[i].len);
+                        // if(i == res.length - 1) console.log(res[i].fields);
+                        await message.channel.send({embed: Object.assign(res[i], embed)});
+                        sleep(800);
+                    }
+                }
+                else{
+                    message.channel.send("Must enter a phase -- p1, p2, p3, p4");
+                }
+
+                break;
+            case '1gls':
+                await refreshGuild();
+                // tb.setType('hls');
+                if((tb_gls.phases.includes(args[0]) || args[0] === 'all') && args[1]){
+                    let phase_list = args[0] === 'all' ? tb_gls.phases:[args[0]];
+                    tbPlatoonsData(tb_gls);
+                    tb_gls.sortTbGuild();
+
+                    for(let i = 0; i < phase_list.length; i++){
+                        tbPlatoonsProcess(tb_gls,phase_list[i]);
+                        // The slice here is for names with space in them
+                        res = tbPlayerPlatoonProcess(tb_gls,args.slice(1).join(" ").toUpperCase(), phase_list[i]);
+                        // res = tbPlayerPlatoonProcess("m", args[0]);
+                        embed.color = "#13eb49";
+                        await message.channel.send({embed: Object.assign(res, embed)});
+                        sleep(800);
+                    }
+
+                }
+                else{
+                    message.channel.send("Must enter a phase -- p1, p2, p3, p4 and player's name");
+                }
+
+                break;
             case "rude":
                 message.channel.send(rude(args[0]));
                 break;
