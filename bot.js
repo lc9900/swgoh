@@ -14,6 +14,7 @@ const my_guild_id = 8665;
 const tb_gds = new Tb('gds');
 const tb_gls = new Tb('gls');
 const tb_hls = new Tb('hls');
+const tb_hds = new Tb('hds');
 
 // tb_gds.printTbMeta();
 
@@ -276,6 +277,7 @@ async function refreshGuild(force=false){
         tb_gds.reset();
         tb_gls.reset();
         tb_hls.reset();
+        tb_hds.reset();
         refresh_status = 1
         guild_data_self = await getGuildData(my_guild_id);
         // console.log(JSON.stringify(guild_data_self, null, 2));
@@ -797,6 +799,53 @@ client.on('message', async message => {
                 }
 
                 break;
+            case 'hds':
+                await refreshGuild();
+                if(tb_hds.phases.includes(args[0])){
+                    tbPlatoonsData(tb_hds);
+                    tb_hds.sortTbGuild();
+                    res = tbPlatoonsProcess(tb_hds,args[0], args.slice(1).join(" "));
+                    // console.log(res.length);
+                    embed.color = "#ede613";
+
+                    // message.channel.send({embed: Object.assign(res[3], embed)});
+
+                    for(i = 0; i < res.length; i++){
+                        // console.log(res[i].len);
+                        // if(i == res.length - 1) console.log(res[i].fields);
+                        await message.channel.send({embed: Object.assign(res[i], embed)});
+                        sleep(800);
+                    }
+                }
+                else{
+                    message.channel.send("Must enter a phase -- p1, p2, p3, p4, p5, p6");
+                }
+
+                break;
+            case '1hds':
+                await refreshGuild();
+                if((tb_hds.phases.includes(args[0]) || args[0] === 'all') && args[1]){
+                    let phase_list = args[0] === 'all' ? tb_hds.phases:[args[0]];
+                    tbPlatoonsData(tb_hds);
+                    tb_hds.sortTbGuild();
+
+                    for(let i = 0; i < phase_list.length; i++){
+                        tbPlatoonsProcess(tb_hds,phase_list[i]);
+                        // The slice here is for names with space in them
+                        res = tbPlayerPlatoonProcess(tb_hds,args.slice(1).join(" ").toUpperCase(), phase_list[i]);
+                        // res = tbPlayerPlatoonProcess("m", args[0]);
+                        embed.color = "#13eb49";
+                        await message.channel.send({embed: Object.assign(res, embed)});
+                        sleep(800);
+                    }
+
+                }
+                else{
+                    message.channel.send("Must enter a phase -- p1, p2, p3, p4, p5, p6 and player's name");
+                }
+
+                break;
+                // End of 1hds
             case 'hls':
                 await refreshGuild();
                 // tb.setType('hls');
@@ -817,7 +866,7 @@ client.on('message', async message => {
                     }
                 }
                 else{
-                    message.channel.send("Must enter a phase -- p1, p2, p3, p4");
+                    message.channel.send("Must enter a phase -- p1, p2, p3, p4, p5, p6");
                 }
 
                 break;
@@ -841,7 +890,7 @@ client.on('message', async message => {
 
                 }
                 else{
-                    message.channel.send("Must enter a phase -- p1, p2, p3, p4 and player's name");
+                    message.channel.send("Must enter a phase -- p1, p2, p3, p4, p5, p6 and player's name");
                 }
 
                 break;

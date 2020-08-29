@@ -60,8 +60,29 @@ class Tb {
                     p4: {units: this.getReqFromFile("p4"), rarity: 7},
                 };
                 break;
+            case 'hds':
+                this.title = "Hoth TB Darkside";
+                this.phases = ['p1','p2','p3','p4','p5','p6'];
+                this.tb_req_files = {
+                    p1: `${__dirname}/data/hds_p1_platoon.req`,
+                    p2: `${__dirname}/data/hds_p2_platoon.req`,
+                    p3: `${__dirname}/data/hds_p3_platoon.req`,
+                    p4: `${__dirname}/data/hds_p4_platoon.req`,
+                    p5: `${__dirname}/data/hds_p5_platoon.req`,
+                    p6: `${__dirname}/data/hds_p6_platoon.req`,
+                };
+
+                this.tb_req = {
+                    p1: {units: this.getReqFromFile("p1"), rarity: 2},
+                    p2: {units: this.getReqFromFile("p2"), rarity: 3},
+                    p3: {units: this.getReqFromFile("p3"), rarity: 4},
+                    p4: {units: this.getReqFromFile("p4"), rarity: 5},
+                    p5: {units: this.getReqFromFile("p5"), rarity: 6},
+                    p6: {units: this.getReqFromFile("p6"), rarity: 7},
+                };
+                break;
             case 'hls':
-                this.title = "Hoth TB Lighside";
+                this.title = "Hoth TB Lightside";
                 this.phases = ['p1','p2','p3','p4','p5','p6'];
                 this.tb_req_files = {
                     p1: `${__dirname}/data/hls_p1_platoon.req`,
