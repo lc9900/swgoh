@@ -96,6 +96,24 @@ let guild = {}, refresh_time, cb_rude = 'off',
     tracked_ship_stats = {
         "rarity": [5,6,7],
     },
+
+    get_tracked_toons = [
+        "Hermit Yoda",
+        "Rebel Officer Leia Organa",
+        'General Skywalker',
+        'Darth Malak',
+        'Wampa',
+    ],
+    get_tracked_toon_stats = {
+        "rarity": [5,6,7],
+    },
+    get_tracked_ships = [
+        "Negotiator",
+        "Malevolence",
+    ],
+    get_tracked_ship_stats = {
+        "rarity": [5,6,7],
+    },
     guild_store_a, guild_store_b, guild_store_self, guild_data_self;
     // guild_store_a = {toons: {}, ships: {}}, guild_store_b = {toons:{}, ships:{}}, guild_store_self = {toons:{}, ships:{}};
 
@@ -282,7 +300,7 @@ async function refreshGuild(force=false){
         guild_data_self = await getGuildData(my_guild_id);
         // console.log(JSON.stringify(guild_data_self, null, 2));
         // console.log(guild_store_self);
-        twParseGuild(guild_data_self.players, guild_store_self);
+        parseGuild(guild_data_self.players, guild_store_self);
         refresh_status = 0;
         refresh_time  = now;
     }
@@ -296,7 +314,7 @@ function getGuildData(id){
             .then(response => response.data);
 }
 
-function twParseGuild(players, guild_store){
+function parseGuild(players, guild_store){
     let relic_tier;
 
     players.forEach(player => {
@@ -326,6 +344,20 @@ function twParseGuild(players, guild_store){
                     guild_store.ships[unit.data.name].rarity[unit.data.rarity]++;
                 }
             }
+            ///////////////////////////// GET stuff here
+            if(get_tracked_toons.includes(unit.data.name)){
+                guild_store.get_toons[unit.data.name].total++;
+                if(get_tracked_toon_stats.rarity.includes(unit.data.rarity)){
+                    guild_store.get_toons[unit.data.name].rarity[unit.data.rarity]++;
+                }
+            }
+            if(get_tracked_ships.includes(unit.data.name)){
+                // console.log(`found ${unit.data.name}`)
+                guild_store.get_ships[unit.data.name].total++;;
+                if(get_tracked_ship_stats.rarity.includes(unit.data.rarity)){
+                    guild_store.get_ships[unit.data.name].rarity[unit.data.rarity]++;
+                }
+            }
         });
     });
 }
@@ -333,8 +365,8 @@ function twParseGuild(players, guild_store){
 function twCompare(guild_a, guild_b, self=false){
     let res = {fields: []}, level, toon, ship, i, table_data = [], res_a = {}, res_b = {}, value = "", total = 0,
         str = `${guild_a.data.name} vs ${guild_b.data.name}\n`;
-    twParseGuild(guild_a.players, guild_store_a);
-    if(!self) twParseGuild(guild_b.players, guild_store_b);
+    parseGuild(guild_a.players, guild_store_a);
+    if(!self) parseGuild(guild_b.players, guild_store_b);
     else guild_store_b = guild_store_self;
 
     res.title = `${guild_a.data.name} vs ${guild_b.data.name}`;
@@ -402,9 +434,59 @@ function twCompare(guild_a, guild_b, self=false){
     return res;
 }
 
+
+function getEval(){
+    let res = {fields: []}, level, toon, ship, i, table_data = [], res_a = {}, res_b = {}, str='', total = 0;
+    // parseGuild(guild_a.players, guild_store_a);
+
+    // str += `GP: ${guild_data_self.data.galactic_power}\n\n`;
+
+    res.title = `${guild_data_self.data.name}`;
+    res.description = `**Players**: ${guild_data_self.players.length}\n**GP**: ${guild_data_self.data.galactic_power}`;
+
+    // console.log(JSON.stringify(guild_store_a, null, 2));
+    for(toon in guild_store_self.get_toons){
+        // str += `*${toon}*\n`;
+        // res.push(`*** ${toon} gear compare ***\n`);
+        str = `*Total: ${guild_store_self.get_toons[toon].total}*\n`;
+        for(i = 0; i < get_tracked_toon_stats.rarity.length; i++){
+            level = get_tracked_toon_stats.rarity[i];
+            let a = guild_store_self.get_toons[toon].rarity[level];
+            if(a === 0) continue;
+
+            str +=`**${level} Stars**: ${a}\n`;
+        }
+        total = total + str.length;
+
+        res.fields.push({name: `==${toon}==`, value: str, inline: true});
+    }
+
+    for(ship in guild_store_self.get_ships){
+        // str = `*${ship}*\n`;
+        str = `*Total: ${guild_store_self.get_ships[ship].total}*\n`;
+
+        for(i = 0; i < get_tracked_toon_stats.rarity.length; i++){
+            level = get_tracked_ship_stats.rarity[i];
+            let a = guild_store_self.get_ships[ship].rarity[level];
+            if(a == 0) {
+                // console.log("found both zero");
+                continue;
+            }
+
+            str += `${level}*: ${a}\n`;
+        }
+
+        total = total + str.length;
+        res.fields.push({name: `==${ship}==`, value: str, inline: true});
+    }
+    // console.log(JSON.stringify(res, null, 2));
+    // console.log(`Total length: ${total}`);
+    return res;
+}
+
 function selfEval(){
     let res = {fields: []}, level, toon, ship, i, table_data = [], res_a = {}, res_b = {}, str='', total = 0;
-    // twParseGuild(guild_a.players, guild_store_a);
+    // parseGuild(guild_a.players, guild_store_a);
 
     // str += `GP: ${guild_data_self.data.galactic_power}\n\n`;
 
@@ -480,7 +562,7 @@ function selfEval(){
 // }
 // Call this function when tw command is executed.
 function initGuildStore(){
-    let stat, guild_store = {toons: {}, ships: {}};
+    let stat, guild_store = {toons: {}, ships: {}, get_toons:{}, get_ships:{}};
     tracked_toons.forEach(toon => {
        guild_store.toons[toon] = {};
        guild_store.toons[toon].total = 0;
@@ -504,6 +586,31 @@ function initGuildStore(){
             guild_store.ships[ship][stat][item] = 0;
          });
        }
+    });
+
+    get_tracked_toons.forEach(toon =>{
+        guild_store.get_toons[toon] = {};
+        guild_store.get_toons[toon].total = 0;
+        for(stat in get_tracked_toon_stats){
+            let list = get_tracked_toon_stats[stat];
+            guild_store.get_toons[toon][stat] = {};
+            //guild_store.get_toons['wampa'][rarity][5] = 0
+            list.forEach(item =>{
+                guild_store.get_toons[toon][stat][item] = 0;
+            });
+        }
+    });
+    get_tracked_ships.forEach(ship => {
+        guild_store.get_ships[ship] = {};
+        guild_store.get_ships[ship].total = 0
+        for(stat in get_tracked_ship_stats){
+            let list = get_tracked_ship_stats[stat];
+            guild_store.get_ships[ship][stat] = {};
+            //guild_store.get_toons['Negotiator'][rarity][5] = 0
+            list.forEach(item =>{
+                guild_store.get_ships[ship][stat][item] = 0;
+            });
+        }
     });
     return guild_store;
 }
@@ -947,9 +1054,13 @@ client.on('message', async message => {
             case "rude":
                 message.channel.send(rude(args[0]));
                 break;
+            case "get":
+                await refreshGuild();
+                res = getEval(guild_data_self);
+                message.channel.send({embed: Object.assign(res, embed)});
+                break;
             case 'test':
                 await message.channel.send("This command is reserved for testing.");
-
                 break;
             default:
                 await refreshGuild();
