@@ -85,6 +85,7 @@ let guild = {}, refresh_time, cb_rude = 'off',
         'CT-7567 "Rex"',
         'CT-21-0408 "Echo"',
         'General Kenobi',
+        'Wat Tambor',
     ],
     tracked_ships = [
         "Hound's Tooth",
@@ -107,9 +108,10 @@ let guild = {}, refresh_time, cb_rude = 'off',
         'General Skywalker',
         'Darth Malak',
         'Wampa',
+        'Wat Tambor',
     ],
     get_tracked_toon_stats = {
-        "rarity": [5,6,7],
+        "rarity": [1,2,3,4,5,6,7],
     },
     get_tracked_ships = [
         "Negotiator",
@@ -469,7 +471,7 @@ function getEval(){
         // str = `*${ship}*\n`;
         str = `*Total: ${guild_store_self.get_ships[ship].total}*\n`;
 
-        for(i = 0; i < get_tracked_toon_stats.rarity.length; i++){
+        for(i = 0; i < get_tracked_ship_stats.rarity.length; i++){
             level = get_tracked_ship_stats.rarity[i];
             let a = guild_store_self.get_ships[ship].rarity[level];
             if(a == 0) {
@@ -677,7 +679,7 @@ client.on('message', async message => {
                 //     message: who + phrases.compliments[num]
                 // });
                 break;
-            case 'dark':
+            case 'bash':
                 await refreshGuild();
                 who = args[0]? args[0]+"! ": message.author.username +"! ";
                 args = args.splice(1);
