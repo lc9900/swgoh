@@ -86,7 +86,7 @@ let guild = {}, refresh_time, cb_rude = 'off',
     ],
     tracked_toon_stats = {
         "gear_level": [11,12],
-        "relic_tier": [0,1,2,3,4,5,6,7],
+        "relic_tier": [0,1,2,3,4,5,6,7,8,9],
     },
     tracked_ship_stats = {
         "rarity": [4,5,6,7],
