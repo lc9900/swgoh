@@ -62,32 +62,22 @@ let guild = {}, refresh_time, cb_rude = 'off',
         "bear.gif",
     ],
     tracked_toons = [
+        'Lord Vader',
+        'Jedi Master Kenobi',
         'Jedi Master Luke Skywalker',
         'Sith Eternal Emperor',
         'Supreme Leader Kylo Ren',
         'Rey',
+        'Maul',
         'Jedi Knight Luke Skywalker',
         'Mon Mothma',
         'Darth Revan',
         'Darth Malak',
         'General Skywalker',
-        'HK-47',
-        'Bastila Shan (Fallen)',
-        'Bossk',
-        'Geonosian Brood Alpha',
-        'Padmé Amidala',
-        'Jedi Knight Revan',
-        'Grand Master Yoda',
-        'Darth Traya',
-        'Jedi Knight Anakin',,
-        'General Grievous',
-        'CT-5555 "Fives"',
-        'CT-7567 "Rex"',
-        'CT-21-0408 "Echo"',
-        'General Kenobi',
         'Wat Tambor',
     ],
     tracked_ships = [
+        "Executor",
         "Hound's Tooth",
         "Han's Millennium Falcon",
         "Anakin's Eta-2 Starfighter",
@@ -95,11 +85,11 @@ let guild = {}, refresh_time, cb_rude = 'off',
         "Malevolence",
     ],
     tracked_toon_stats = {
-        "gear_level": [11,12,13],
-        "relic_tier": [1,2,3,4,5,6,7],
+        "gear_level": [11,12],
+        "relic_tier": [0,1,2,3,4,5,6,7],
     },
     tracked_ship_stats = {
-        "rarity": [5,6,7],
+        "rarity": [4,5,6,7],
     },
 
     get_tracked_toons = [
@@ -149,7 +139,8 @@ function tbPlatoonsData(tb){
         // console.log(`tb_guild: ${Object.keys(tb.tb_guild)}`);
         return;
     }
-
+    // console.log("tbPlatoonsData - guild_data_self.players #############################");
+    // console.log(JSON.stringify(guild_data_self.players, null, 2));
     guild_data_self.players.forEach(player => {
         player.units.forEach(unit =>{
             // if(unit.data.name == 'CC-2224 Cody') console.log(`Player has ${unit.data.name} with rarity ${unit.data.rarity}`);
@@ -174,6 +165,9 @@ function tbPlatoonsProcess(tb, phase, toon_name=".*"){
     data.description = `Assignments are made base on toon gp, starting from the lowest`;
     tb.tb_players = {};
 
+    // debug 
+    // console.log(JSON.stringify(tb, null, 2));
+
     // If the toon name is not matched, then skip. Default matches everything
     toons_req_filtered = toons_req.filter(toon => re.test(toon));
     if(toons_req_filtered.length == 0){
@@ -197,6 +191,9 @@ function tbPlatoonsProcess(tb, phase, toon_name=".*"){
         // }
 
         // console.log(`toon is: ${toon}` );
+        // console.log(JSON.stringify(tb.tb_guild[toon], null, 2));
+
+        // if (tb.tb_guild[toon] == undefined) tb.tb_guild[toon] = [];
         for(let i = 0; i < tb.tb_guild[toon].length; i++){
 
             player = tb.tb_guild[toon][i];
@@ -304,8 +301,10 @@ async function refreshGuild(force=false){
         tb_hds.reset();
         refresh_status = 1
         guild_data_self = await getGuildData(my_guild_id);
+
         // console.log(JSON.stringify(guild_data_self, null, 2));
         // console.log(guild_store_self);
+
         parseGuild(guild_data_self.players, guild_store_self);
         refresh_status = 0;
         refresh_time  = now;
@@ -429,7 +428,7 @@ function twCompare(guild_a, guild_b, self=false){
             }
 
             // res.fields.push({name: `${level}*: ${a} vs ${b}`});
-            value += `**${level}***: ${a} vs ${b}\n`;
+            value += `**${level}s**: ${a} vs ${b}\n`;
             // str += `${level}*: ${a} vs ${b}\n`;
         }
         // res.fields.push({ name: '\u200B', value: '\u200B' });
@@ -479,7 +478,7 @@ function getEval(){
                 continue;
             }
 
-            str += `${level}*: ${a}\n`;
+            str += `**${level}s**: ${a}\n`;
         }
 
         total = total + str.length;
@@ -539,7 +538,7 @@ function selfEval(){
                 continue;
             }
 
-            str += `${level}*: ${a}\n`;
+            str += `**${level}s**: ${a}\n`;
         }
 
         total = total + str.length;
@@ -669,7 +668,7 @@ client.on('message', async message => {
         switch(cmd) {
             // !ping
             case 'light':
-                await refreshGuild();
+                // await refreshGuild();
                 who = args[0]? args[0]+"! ": message.author.username +"! ";
                 args = args.splice(1);
                 num = Math.floor(Math.random() * phrases.compliments.length);
@@ -680,7 +679,7 @@ client.on('message', async message => {
                 // });
                 break;
             case 'bash':
-                await refreshGuild();
+                // await refreshGuild();
                 who = args[0]? args[0]+"! ": message.author.username +"! ";
                 args = args.splice(1);
                 num = Math.floor(Math.random() * phrases.dis.length);
@@ -691,7 +690,7 @@ client.on('message', async message => {
                 // });
                 break;
             case 'quote':
-                await refreshGuild();
+                // await refreshGuild();
                 num = Math.floor(Math.random() * phrases.quotes.length);
                 await message.channel.send(phrases.quotes[num]);
                 // bot.sendMessage({
@@ -701,7 +700,7 @@ client.on('message', async message => {
                 break;
             // https://cdn.discordapp.com/attachments/353622124839043076/682413698496593966/image0.gif
             case 'ep':
-                await refreshGuild();
+                // await refreshGuild();
                 num = Math.floor(Math.random() * images.length);
                 await message.channel.send({
                     files: [{
@@ -712,7 +711,7 @@ client.on('message', async message => {
                 // sendFiles(channelID, [images[num]]);
                 break;
             case 'fight':
-                await refreshGuild();
+                // await refreshGuild();
                 who = args[0]? args[0]+"! ": message.author.username +"! ";
                 args = args.splice(1);
                 num = Math.floor(Math.random() * phrases.fight.length);
@@ -723,7 +722,7 @@ client.on('message', async message => {
                 // });
                 break;
             case 'charge':
-                await refreshGuild();
+                // await refreshGuild();
                 who = args[0]? args[0]+"! ": message.author.username +"! ";
                 args = args.splice(1);
                 num = Math.floor(Math.random() * phrases.money.length);
@@ -734,7 +733,7 @@ client.on('message', async message => {
                 // });
                 break;
             case 'thraceme':
-                await refreshGuild();
+                // await refreshGuild();
                 await message.channel.send("Congratulations Thrace, that is awesome for you!");
                 await message.channel.send("Thrace: Thanks! Pretty excited about it myself. You are awesome yourself");
                 // bot.sendMessage({
@@ -748,7 +747,7 @@ client.on('message', async message => {
                 // });
                 break;
             case 'flip':
-                await refreshGuild();
+                // await refreshGuild();
                 who = args[0]? args[0]+"! ": message.author.username +"! ";
                 args = args.splice(1);
                 await message.channel.send(who + ":middle_finger:".repeat(Math.floor(Math.random() * 20) + 5));
@@ -758,7 +757,7 @@ client.on('message', async message => {
                 // });
                 break;
             case 'snowflake':
-                await refreshGuild();
+                // await refreshGuild();
                 who = args[0]? args[0]+"! ": message.author.username +"! ";
                 args = args.splice(1);
                 await message.channel.send(who + ":snowflake:".repeat(Math.floor(Math.random() * 20) + 5));
@@ -768,7 +767,7 @@ client.on('message', async message => {
                 // });
                 break;
             case 'halo':
-                await refreshGuild();
+                // await refreshGuild();
                 who = args[0]? args[0]+"! ": message.author.username +"! ";
                 args = args.splice(1);
                 num = Math.floor(Math.random() * phrases.halo.length);
@@ -810,7 +809,7 @@ client.on('message', async message => {
                 //     });
                 break;
             case 'clear':
-                await refreshGuild();
+                // await refreshGuild();
                 await message.channel.send(clearScreen());
                 // bot.sendMessage({
                 //    to: channelID,
@@ -822,6 +821,7 @@ client.on('message', async message => {
                 await message.channel.send("Guild data refreshed");
                 break;
             case 'tw':
+                await refreshGuild();
                 guild_store_a = initGuildStore();
                 guild_store_b = initGuildStore();
 
@@ -893,7 +893,7 @@ client.on('message', async message => {
                     // console.log(phase_list);
 
                     tbPlatoonsData(tb_gds);
-                    tb_gds.sortTbGuild();
+                    // tb_gds.sortTbGuild();
 
                     for(let i = 0; i < phase_list.length; i++){
                         tbPlatoonsProcess(tb_gds,phase_list[i]);
@@ -916,7 +916,7 @@ client.on('message', async message => {
                 await refreshGuild();
                 if(tb_hds.phases.includes(args[0])){
                     tbPlatoonsData(tb_hds);
-                    tb_hds.sortTbGuild();
+                    // tb_hds.sortTbGuild();
                     res = tbPlatoonsProcess(tb_hds,args[0], args.slice(1).join(" "));
                     // console.log(res.length);
                     embed.color = "#ede613";
@@ -940,7 +940,7 @@ client.on('message', async message => {
                 if((tb_hds.phases.includes(args[0]) || args[0] === 'all') && args[1]){
                     let phase_list = args[0] === 'all' ? tb_hds.phases:[args[0]];
                     tbPlatoonsData(tb_hds);
-                    tb_hds.sortTbGuild();
+                    // tb_hds.sortTbGuild();
 
                     for(let i = 0; i < phase_list.length; i++){
                         tbPlatoonsProcess(tb_hds,phase_list[i]);
@@ -964,7 +964,7 @@ client.on('message', async message => {
                 // tb.setType('hls');
                 if(tb_hls.phases.includes(args[0])){
                     tbPlatoonsData(tb_hls);
-                    tb_hls.sortTbGuild();
+                    // tb_hls.sortTbGuild();
                     res = tbPlatoonsProcess(tb_hls,args[0], args.slice(1).join(" "));
                     // console.log(res.length);
                     embed.color = "#ede613";
@@ -989,7 +989,7 @@ client.on('message', async message => {
                 if((tb_hls.phases.includes(args[0]) || args[0] === 'all') && args[1]){
                     let phase_list = args[0] === 'all' ? tb_hls.phases:[args[0]];
                     tbPlatoonsData(tb_hls);
-                    tb_hls.sortTbGuild();
+                    // tb_hls.sortTbGuild();
 
                     for(let i = 0; i < phase_list.length; i++){
                         tbPlatoonsProcess(tb_hls,phase_list[i]);
@@ -1012,7 +1012,7 @@ client.on('message', async message => {
                 // tb.setType('hls');
                 if(tb_gls.phases.includes(args[0])){
                     tbPlatoonsData(tb_gls);
-                    tb_gls.sortTbGuild();
+                    // tb_gls.sortTbGuild();
                     res = tbPlatoonsProcess(tb_gls,args[0], args.slice(1).join(" "));
                     // console.log(res.length);
                     embed.color = "#ede613";
@@ -1037,9 +1037,7 @@ client.on('message', async message => {
                 if((tb_gls.phases.includes(args[0]) || args[0] === 'all') && args[1]){
                     let phase_list = args[0] === 'all' ? tb_gls.phases:[args[0]];
                     tbPlatoonsData(tb_gls);
-                    // console.log(JSON.stringify(tb_gls.tb_guild, 0, 2));
-
-                    tb_gls.sortTbGuild();
+                    // tb_gls.sortTbGuild();
 
                     for(let i = 0; i < phase_list.length; i++){
                         tbPlatoonsProcess(tb_gls,phase_list[i]);
@@ -1068,8 +1066,17 @@ client.on('message', async message => {
             case 'test':
                 await message.channel.send("This command is reserved for testing.");
                 break;
+            case 'help':
+                    await message.channel.send("**LS Geo TB:**");
+                    await message.channel.send("`/cb 1gls <p1|p2|p3|p4|all> <player name sub-string>`");
+                    await message.channel.send("i.e. `/cb 1gls all land`");
+                    await message.channel.send("**DS Geo TB:**");
+                    await message.channel.send("`/cb 1gds <p1|p2|p3|p4|all> <player name sub-string>`");
+                    await message.channel.send("i.e. `/cb 1gds all land`");
+                    break;
             default:
                 await refreshGuild();
+                // console.log(JSON.stringify(tb_gds, null, 2));
                 await message.channel.send("I don't understand the words that are coming out of your mouth....");
                 // bot.sendMessage({
                 //    to: channelID,
