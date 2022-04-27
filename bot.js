@@ -9,13 +9,14 @@ const axios = require('axios');
 const fs = require('fs');
 const table = require('table').table;
 const Tb = require('./Tb');
-const base_url = "https://swgoh.gg/api";
+const base_url = "http://api.swgoh.gg";
 const my_guild_id = 8665;
 const tb_gds = new Tb('gds');
 const tb_gls = new Tb('gls');
 const tb_hls = new Tb('hls');
 const tb_hds = new Tb('hds');
 
+axios.defaults.withCredentials = true
 // tb_gds.printTbMeta();
 
 let embed = {
