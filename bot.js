@@ -77,6 +77,7 @@ let guild = {}, refresh_time, cb_rude = 'off',
         'Darth Malak',
         'General Skywalker',
         'Wat Tambor',
+        'Ki-Adi-Mundi',
     ],
     tracked_ships = [
         "Executor",
