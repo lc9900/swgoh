@@ -72,11 +72,6 @@ let guild = {}, refresh_time, cb_rude = 'off',
         'Maul',
         'Commander Ahsoka Tano',
         'Jedi Knight Luke Skywalker',
-        'Mon Mothma',
-        'Darth Revan',
-        'Darth Malak',
-        'General Skywalker',
-        'Wat Tambor',
         'Ki-Adi-Mundi',
         'Shaak Ti',
         'ARC Trooper',
@@ -90,9 +85,19 @@ let guild = {}, refresh_time, cb_rude = 'off',
         'Bistan',
         'Jyn Erso',
         'Hera Syndulla',
+        'Admiral Raddus',
+        'Cassian Andor',
+        'Kyle Katarn',
+        'Darth Talon',
+        "Mara Jade, The Emperor's Hand",
+        'Echo',
+        'Hunter',
+        'Wrecker',
+        'Tech',
     ],
     tracked_ships = [
         "Executor",
+        'TIE/IN Interceptor Prototype',
         // "Hound's Tooth",
         // "Han's Millennium Falcon",
         // "Anakin's Eta-2 Starfighter",
@@ -504,6 +509,48 @@ function getEval(){
     return res;
 }
 
+// Discord limits amount of characters in a message, and truncates anything over that.
+// longMessageProcess() takes the message, and turns it into a list of messages, and
+// each individual message will be less than the max.
+function longMessageProcess(data){
+    let res = [], limit = 300, counter = 0;
+    let message = {
+        title: data.title,
+        description: data.description,
+        fields: []
+    };
+
+    // console.log("longMessageProcess got data fields: " + data.fields.length);
+
+    for( let i = 0; i < data.fields.length; i++){
+        // console.log("In the loop with i: " + i);
+        message.fields.push(data.fields[i]);
+        counter = counter + String(data.fields[i]).length;
+
+        // console.log("counter: " + counter);
+        // console.log("data.fields[i].length: " + String(data.fields[i]).length);
+        // console.log("data.fields[i]: " + JSON.stringify(data.fields[i]));
+
+        // We've hit the single message limit, so pushing the message to res,
+        // and start a new message.
+        if (counter >= limit) {
+            // console.log("Pushing message");
+            res.push(message);
+            message = {fields: []};
+            message.title = data.title;
+            message.description = data.description;
+            counter = 0;
+        }
+    }
+
+    // If the current message is less than the limit, than add it to res
+    if(counter <= limit && counter > 0) {
+        // console.log("Pushing message");
+        res.push(message);
+    }
+    return res;
+}
+
 function selfEval(){
     let res = {fields: []}, level, toon, ship, i, table_data = [], res_a = {}, res_b = {}, str='', total = 0;
     // parseGuild(guild_a.players, guild_store_a);
@@ -561,7 +608,7 @@ function selfEval(){
     }
     // console.log(JSON.stringify(res, null, 2));
     // console.log(`Total length: ${total}`);
-    return res;
+    return longMessageProcess(res);
 }
 
 // guild store should look like --
@@ -805,7 +852,13 @@ client.on('message', async message => {
             case 'self':
                 await refreshGuild();
                 res = selfEval(guild_data_self);
-                message.channel.send({embed: Object.assign(res, embed)});
+                // message.channel.send({embed: Object.assign(res, embed)});
+
+                // console.log("res.length: " + res.length);
+                for(i = 0; i < res.length; i++){
+                    await message.channel.send({embed: Object.assign(res[i], embed)});
+                    sleep(800);
+                }
 
                 // guild_store_a = initGuildStore();
                 // axios.get(base_url + "/guild/" + my_guild_id)
