@@ -10,7 +10,7 @@ const fs = require('fs');
 const table = require('table').table;
 const Tb = require('./Tb');
 const base_url = "http://api.swgoh.gg";
-const my_guild_id = 8665;
+const my_guild_id = "3k6Ny4_6SD60qExSAuJstg";
 const tb_gds = new Tb('gds');
 const tb_gls = new Tb('gls');
 const tb_hls = new Tb('hls');
@@ -130,7 +130,7 @@ let guild = {}, refresh_time, cb_rude = 'off',
     get_tracked_ship_stats = {
         "rarity": [5,6,7],
     },
-    guild_store_a, guild_store_b, guild_store_self, guild_data_self;
+    guild_store_a, guild_store_b, guild_store_self, guild_data_self, guild_player_data_self;
     // guild_store_a = {toons: {}, ships: {}}, guild_store_b = {toons:{}, ships:{}}, guild_store_self = {toons:{}, ships:{}};
 
 // let tb.tb_players = {
@@ -145,7 +145,7 @@ let guild = {}, refresh_time, cb_rude = 'off',
 // If the name can be matched to any guild member, then return true, else return false
 function verifyPlayerName(player_name){
     let re = new RegExp(player_name, 'i'),
-        matched_names = guild_data_self.players.filter(player => re.test(player.data.name));
+        matched_names = guild_data_self.data.members.filter(player => re.test(player.player_name));
     if(matched_names.length > 0) return true;
     else return false;
 }
@@ -161,15 +161,17 @@ function tbPlatoonsData(tb){
     }
     // console.log("tbPlatoonsData - guild_data_self.players #############################");
     // console.log(JSON.stringify(guild_data_self.players, null, 2));
-    guild_data_self.players.forEach(player => {
+    guild_data_self.data.members.forEach(player => {
         player.units.forEach(unit =>{
+            // console.log(JSON.stringify(unit, null, 2)); //debug
+
             // if(unit.data.name == 'CC-2224 Cody') console.log(`Player has ${unit.data.name} with rarity ${unit.data.rarity}`);
             // console.log(`Processing ${unit.data.name} with rarity ${unit.data.rarity}`);
             if(tb.needToon(unit.data.name, unit.data.rarity)){
                 // console.log(`Adding ${unit.data.name} with rarity ${unit.data.rarity}`);
                 // if(unit.data.name == 'CC-2224 Cody') console.log(`Adding ${unit.data.name} with rarity ${unit.data.rarity}`);
 
-                tb.addUnitGuild(player.data.name, unit.data.name, unit.data.power, unit.data.rarity);
+                tb.addUnitGuild(player.player_name, unit.data.name, unit.data.power, unit.data.rarity);
             }
         });
     });
@@ -322,10 +324,21 @@ async function refreshGuild(force=false){
         refresh_status = 1
         guild_data_self = await getGuildData(my_guild_id);
 
-        // console.log(JSON.stringify(guild_data_self, null, 2));
+        // console.log(JSON.stringify(guild_data_self, null, 2)); // debug
         // console.log(guild_store_self);
 
-        parseGuild(guild_data_self.players, guild_store_self);
+        // console.log("###################################");
+        // console.log("###################################");
+        // console.log("###################################");
+        // console.log("###################################");
+
+        await getGuildPlayerData(guild_data_self.data.members);
+
+        // console.log(JSON.stringify(guild_data_self.data.members[0].units, null, 2)); //debug
+
+        parseGuild(guild_data_self.data.members, guild_store_self);
+
+        // console.log(JSON.stringify(guild_store_self, null, 2)); // debug
         refresh_status = 0;
         refresh_time  = now;
     }
@@ -335,20 +348,55 @@ async function refreshGuild(force=false){
 }
 
 function getGuildData(id){
-    return  axios.get(base_url + "/guild/" + id)
+    // return  axios.get(base_url + "/guild/" + id)
+    return  axios.get(base_url + "/guild-profile/" + id)
             .then(response => response.data);
 }
 
-function parseGuild(players, guild_store){
-    let relic_tier;
+function getPlayerData(ally_code){
+    return  axios.get(base_url + "/player/" + ally_code)
+            .then(response => response.data);
+}
 
-    players.forEach(player => {
+async function getGuildPlayerData(players){
+    let player, data;
+
+    for(let i = 0; i < players.length; i++){
+        player = players[i];
+        data = await getPlayerData(player.ally_code);
+        player.units = data.units;
+    }
+}
+
+function parseGuild(players, guild_store){
+    let player, relic_tier, player_units = [];
+
+    // console.log(JSON.stringify(players, null, 2)); // debug
+    // for(let i = 0; i < players.length; i++){
+    //     player = players[i];
+    //     console.log(`${player.player_name}`);
+    // }
+
+    for(let i = 0; i < players.length; i++){
+        player = players[i];
+        // player_data = await getPlayerData(player.ally_code);
+
+        // console.log(JSON.stringify(player_data.units[0], null, 2)); // debug
         player.units.forEach(unit => {
             if(tracked_toons.includes(unit.data.name)){
-                // console.log(`found ${unit.data.name}`);
+
+                // console.log(`found ${unit.data.name}`); // debug
+
                 guild_store.toons[unit.data.name].total++;
+
+                // console.log(`guild_store.toons[unit.data.name].total is ${guild_store.toons[unit.data.name].total}`);
+
+                // console.log(`unit.data.gear_level is ${unit.data.gear_level} of type  ${typeof(unit.data.gear_level)}`); // debug
+
                 if(tracked_toon_stats.gear_level.includes(unit.data.gear_level)){
                     guild_store.toons[unit.data.name].gear_level[unit.data.gear_level]++;
+
+                    // console.log(`toon ${unit.data.name} count is ${guild_store.toons[unit.data.name].gear_level[unit.data.gear_level]}`) //debug
                 }
                 if(typeof unit.data.relic_tier === 'number'){
                     if(tracked_toon_stats.relic_tier.includes(unit.data.relic_tier - 2)){
@@ -384,18 +432,21 @@ function parseGuild(players, guild_store){
                 }
             }
         });
-    });
+    }
+
+    // console.log(JSON.stringify(guild_store, null, 2));
+    // return guild_store;
 }
 
 function twCompare(guild_a, guild_b, self=false){
     let res = {fields: []}, level, toon, ship, i, table_data = [], res_a = {}, res_b = {}, value = "", total = 0,
         str = `${guild_a.data.name} vs ${guild_b.data.name}\n`;
-    parseGuild(guild_a.players, guild_store_a);
-    if(!self) parseGuild(guild_b.players, guild_store_b);
+    parseGuild(guild_a.data.members, guild_store_a);
+    if(!self) parseGuild(guild_b.data.members, guild_store_b);
     else guild_store_b = guild_store_self;
 
     res.title = `${guild_a.data.name} vs ${guild_b.data.name}`;
-    res.description = `**Players**: ${guild_a.players.length} vs ${guild_b.players.length}\n**GP**: ${guild_a.data.galactic_power} vs ${guild_b.data.galactic_power}`;
+    res.description = `**Players**: ${guild_a.data.members.length} vs ${guild_b.data.members.length}\n**GP**: ${guild_a.data.galactic_power} vs ${guild_b.data.galactic_power}`;
 
     // str += `GP: ${guild_a.data.galactic_power} vs ${guild_b.data.galactic_power}\n`;
     // str += `Players: ${guild_a.players.length} vs ${guild_b.players.length}\n\n`;
@@ -467,7 +518,7 @@ function getEval(){
     // str += `GP: ${guild_data_self.data.galactic_power}\n\n`;
 
     res.title = `${guild_data_self.data.name}`;
-    res.description = `**Players**: ${guild_data_self.players.length}\n**GP**: ${guild_data_self.data.galactic_power}`;
+    res.description = `**Players**: ${guild_data_self.data.members.length}\n**GP**: ${guild_data_self.data.galactic_power}`;
 
     // console.log(JSON.stringify(guild_store_a, null, 2));
     for(toon in guild_store_self.get_toons){
@@ -558,13 +609,16 @@ function selfEval(){
     // str += `GP: ${guild_data_self.data.galactic_power}\n\n`;
 
     res.title = `${guild_data_self.data.name}`;
-    res.description = `**Players**: ${guild_data_self.players.length}\n**GP**: ${guild_data_self.data.galactic_power}`;
+    res.description = `**Players**: ${guild_data_self.data.members.length}\n**GP**: ${guild_data_self.data.galactic_power}`;
 
-    // console.log(JSON.stringify(guild_store_a, null, 2));
+    // console.log(JSON.stringify(guild_store_self, null, 2)); // debug
+
     for(toon in guild_store_self.toons){
+        // console.log(`Processing ${toon}`);
         // str += `*${toon}*\n`;
         // res.push(`*** ${toon} gear compare ***\n`);
         str = `*${guild_store_self.toons[toon].total}*\n`;
+        // console.log(str);
         for(i = 0; i < tracked_toon_stats.gear_level.length; i++){
             level = tracked_toon_stats.gear_level[i];
             let a = guild_store_self.toons[toon].gear_level[level];
@@ -579,6 +633,7 @@ function selfEval(){
         for(i = 0; i < tracked_toon_stats.relic_tier.length; i++){
             level = tracked_toon_stats.relic_tier[i];
             let a = guild_store_self.toons[toon].relic_tier[level];
+
             if(a === 0) continue;
 
             str +=`**R${level}**: ${a}\n`;
@@ -913,11 +968,11 @@ client.on('message', async message => {
                 break;
             case 'issue':
                 await refreshGuild();
-                axios.get(base_url + "/guild/" + my_guild_id)
+                axios.get(base_url + "/guild-profile/" + my_guild_id)
                     .then(response => response.data)
                     .then(async data => {
                         guild = data,
-                        await message.channel.send('```' + findIssues(guild.players) + '```');
+                        await message.channel.send('```' + findIssues(guild.data.members) + '```');
                         // bot.sendMessage({
                         //     to: channelID,
                         //     message: '```' + findIssues(guild.players) + '```',
@@ -958,7 +1013,7 @@ client.on('message', async message => {
 
                     // tb_gds.printTbMeta();
                     let phase_list = args[0] === 'all' ? tb_gds.phases:[args[0]];
-                    // console.log(phase_list);
+                    // console.log(phase_list); // debug
 
                     tbPlatoonsData(tb_gds);
                     // tb_gds.sortTbGuild();
@@ -1189,7 +1244,7 @@ function findAllRelic(players, relic_tier=7){
 function findIssues(players){
     let table_data = [], res = {}, str = "========== G13 Toon at Relic 0 ==========\n", name;
     players.forEach(player =>{
-        let units = player.units, name = player.data.name;
+        let units = player.units, name = player.player_name;
         units.forEach(unit => {
             if(unit.data.relic_tier && unit.data.relic_tier - 2 == 0 && unit.gear_level == 13){
                 if(!res[name]) res[name] = [];
