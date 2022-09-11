@@ -332,9 +332,15 @@ async function refreshGuild(force=false){
         // console.log("###################################");
         // console.log("###################################");
 
+        guildMemberCleanUp(guild_data_self.data.members);
+        // console.log(JSON.stringify(guild_data_self.data.members, null, 2)); // debug
+        // console.log("After print");
+        // showGuildMembers(guild_data_self.data.members); // debug
+
         await getGuildPlayerData(guild_data_self.data.members);
 
         // console.log(JSON.stringify(guild_data_self.data.members[0].units, null, 2)); //debug
+
 
         parseGuild(guild_data_self.data.members, guild_store_self);
 
@@ -344,6 +350,15 @@ async function refreshGuild(force=false){
     }
     else {
         // console.log(`No refresh needed -- refresh_time: ${refresh_time}, force: ${force}, diff: ${timeDiff(refresh_time, now, 'day')}`);
+    }
+}
+
+// debug show functon
+function showGuildMembers(players){
+    console.log(`Total ${players.length} players`)
+    for(let i = 0; i < players.length; i++){
+        player = players[i];
+        console.log(`player #${i}: ${player.player_name}, ally_code: ${JSON.stringify(player.ally_code, null, 2)}`) // debug
     }
 }
 
@@ -358,14 +373,37 @@ function getPlayerData(ally_code){
             .then(response => response.data);
 }
 
+function guildMemberCleanUp(players){
+    let target = [];
+    
+    // Cleanup players with ally code of null
+    for(let i = 0; i < players.length; i++){
+        player = players[i];
+        if(!player.ally_code) target.push(i);
+    }
+
+    target.forEach(index => {
+        players.splice(index,1);
+    })
+}
+
 async function getGuildPlayerData(players){
     let player, data;
 
     for(let i = 0; i < players.length; i++){
         player = players[i];
+
+        // console.log(`player: ${player.player_name}, ally_code: ${JSON.stringify(player.ally_code, null, 2)}, typeof ally_code: ${typeof player.ally_code}`) // debug
+
+        if(!player.ally_code) continue;
+        
+        // console.log(`Getting data for player: ${player.player_name}, ally_code: ${player.ally_code}`) // debug
+
         data = await getPlayerData(player.ally_code);
         player.units = data.units;
     }
+
+    // console.log(`getGuildPlayerData() is done.`); // debug
 }
 
 function parseGuild(players, guild_store){
@@ -773,7 +811,9 @@ client.on('ready', function (evt) {
 });
 // bot.on('message', function (user, userID, channelID, message, evt) {
 client.on('message', async message => {
-    // console.log("We got a message");
+    // console.log(`We got a message ${JSON.stringify(message, null, 2)}`); //debug
+    // console.log(`We got a message ${message.content}`); //debug
+
     let i, num, who = '', guild_a, guild_b, res, self = false;
     // Our bot needs to know if it will execute a command
     // It will listen for messages that will start with `!`
@@ -1187,7 +1227,8 @@ client.on('message', async message => {
                 message.channel.send({embed: Object.assign(res, embed)});
                 break;
             case 'test':
-                await message.channel.send("This command is reserved for testing.");
+                // await message.channel.send("This command is reserved for testing.");
+                await refreshGuild();
                 break;
             case 'help':
                     await message.channel.send("**LS Geo TB:**");
