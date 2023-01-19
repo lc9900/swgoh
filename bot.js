@@ -94,6 +94,7 @@ let guild = {}, refresh_time, cb_rude = 'off',
         'Hunter',
         'Wrecker',
         'Tech',
+        'Ahsoka Tano (Fulcrum)',
     ],
     tracked_ships = [
         "Executor",
