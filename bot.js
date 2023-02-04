@@ -428,25 +428,43 @@ function parseGuild(players, guild_store){
 
                 guild_store.toons[unit.data.name].total++;
 
+                // For omicron
+                if(unit.data.omicron_abilities.length > 0) guild_store.toons[unit.data.name].omi++;
+
                 // console.log(`guild_store.toons[unit.data.name].total is ${guild_store.toons[unit.data.name].total}`);
 
                 // console.log(`unit.data.gear_level is ${unit.data.gear_level} of type  ${typeof(unit.data.gear_level)}`); // debug
 
                 if(tracked_toon_stats.gear_level.includes(unit.data.gear_level)){
-                    guild_store.toons[unit.data.name].gear_level[unit.data.gear_level]++;
+                    guild_store.toons[unit.data.name].gear_level[unit.data.gear_level].count++;
+
+                    // Omi count per gear level
+                    if(unit.data.omicron_abilities.length > 0) guild_store.toons[unit.data.name].gear_level[unit.data.gear_level].omi_count++;
 
                     // console.log(`toon ${unit.data.name} count is ${guild_store.toons[unit.data.name].gear_level[unit.data.gear_level]}`) //debug
                 }
                 if(typeof unit.data.relic_tier === 'number'){
                     if(tracked_toon_stats.relic_tier.includes(unit.data.relic_tier - 2)){
-                        guild_store.toons[unit.data.name].relic_tier[unit.data.relic_tier - 2]++;
+                        guild_store.toons[unit.data.name].relic_tier[unit.data.relic_tier - 2].count++;
+
+                        // console.log(`current omi count: ${guild_store.toons[unit.data.name].relic_tier[unit.data.relic_tier - 2]['omi']}`);
+
+                        // Omi count per relic level
+                        if(unit.data.omicron_abilities.length > 0) {
+                            guild_store.toons[unit.data.name].relic_tier[unit.data.relic_tier - 2].omi_count++;
+                            // console.log("Added omi: " + guild_store.toons[unit.data.name].relic_tier[unit.data.relic_tier - 2]['omi']);
+                        }
                         // debug
-                        // if(unit.data.relic_tier === 1 && unit.data.name === "General Kenobi"){
-                        //     console.log("GK R1 data: " + JSON.stringify(unit, null, 2));
+                        // if(unit.data.name === "Ahsoka Tano (Fulcrum)"){
+                        //     console.log("Fulcrum: " + JSON.stringify(unit, null, 2));
                         // }
                     }
                 }
             }
+            
+            // if(unit.data.name === "Ahsoka Tano (Fulcrum)"){
+            //     console.log("Fulcrum: " + JSON.stringify(guild_store.toons[unit.data.name], null, 2));
+            // }
 
             // Ships now
             if(tracked_ships.includes(unit.data.name)){
@@ -657,13 +675,15 @@ function selfEval(){
         // str += `*${toon}*\n`;
         // res.push(`*** ${toon} gear compare ***\n`);
         str = `*${guild_store_self.toons[toon].total}*\n`;
+        str += `*Omicron:${guild_store_self.toons[toon].omi}*\n`;
         // console.log(str);
         for(i = 0; i < tracked_toon_stats.gear_level.length; i++){
             level = tracked_toon_stats.gear_level[i];
-            let a = guild_store_self.toons[toon].gear_level[level];
+            let a = guild_store_self.toons[toon].gear_level[level].count;
+            let omi_count = guild_store_self.toons[toon].gear_level[level].omi_count;
             if(a === 0) continue;
 
-            str +=`**G${level}**: ${a}\n`;
+            str +=`**G${level}**: ${a}, Omi: ${omi_count}\n`;
         }
         // res.push(str);
         // str += `***relic***\n`;
@@ -671,11 +691,12 @@ function selfEval(){
         // Relic tier data from swgoh is all wrong. Commenting this out.
         for(i = 0; i < tracked_toon_stats.relic_tier.length; i++){
             level = tracked_toon_stats.relic_tier[i];
-            let a = guild_store_self.toons[toon].relic_tier[level];
+            let a = guild_store_self.toons[toon].relic_tier[level].count;
+            let omi_count = guild_store_self.toons[toon].relic_tier[level].omi_count;
 
             if(a === 0) continue;
 
-            str +=`**R${level}**: ${a}\n`;
+            str +=`**R${level}**: ${a}, Omi: ${omi_count}\n`;
         }
         total = total + str.length;
 
@@ -727,16 +748,22 @@ function initGuildStore(){
     tracked_toons.forEach(toon => {
        guild_store.toons[toon] = {};
        guild_store.toons[toon].total = 0;
+       guild_store.toons[toon].omi = 0;
        for(stat in tracked_toon_stats){
          let list = tracked_toon_stats[stat];
          //guild_store["General Kenobi"]["gear_level"]
          guild_store.toons[toon][stat] = {};
          list.forEach(item => {
-            // guild_store["General Kenobi"]["gear_level"][10] = 0
-            guild_store.toons[toon][stat][item] = 0;
+            // guild_store["General Kenobi"]["gear_level"]['10'] = 0
+            guild_store.toons[toon][stat][item] = {count: 0, omi_count: 0};
+            // guild_store.toons[toon][stat][item]['omi'] = 0;
          });
        }
     });
+
+    // debug
+    // console.log(JSON.stringify(guild_store,null,2));
+
     tracked_ships.forEach(ship => {
        guild_store.ships[ship] = {};
        guild_store.ships[ship].total = 0;
@@ -752,6 +779,7 @@ function initGuildStore(){
     get_tracked_toons.forEach(toon =>{
         guild_store.get_toons[toon] = {};
         guild_store.get_toons[toon].total = 0;
+        guild_store.get_toons[toon].omi = 0
         for(stat in get_tracked_toon_stats){
             let list = get_tracked_toon_stats[stat];
             guild_store.get_toons[toon][stat] = {};
